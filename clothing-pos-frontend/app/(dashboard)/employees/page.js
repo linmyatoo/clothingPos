@@ -140,18 +140,7 @@ function Employees() {
                     <p className="text-sm text-slate-500">Manage your team members and their access levels.</p>
                 </div>
                 <div className="flex gap-3">
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <span className="material-symbols-outlined text-slate-400">search</span>
-                        </div>
-                        <input
-                            className="block w-64 rounded-xl border-slate-200 py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-primary shadow-sm transition-all"
-                            placeholder="Search employees..."
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
+
                     <button
                         onClick={handleOpenAdd}
                         className="flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/30 transition-all active:scale-95"
@@ -202,10 +191,10 @@ function Employees() {
             </div>
 
             {/* Employee Table */}
-            <div className="flex-1 px-8 pb-8">
+            <div className="flex-1 px-4 md:px-8 pb-8">
                 <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full text-left border-collapse whitespace-nowrap">
                             <thead>
                                 <tr className="bg-slate-50/50 border-b border-slate-100">
                                     <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 w-[25%]">Name</th>

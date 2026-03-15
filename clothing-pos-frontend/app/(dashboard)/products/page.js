@@ -12,6 +12,7 @@ function Products() {
     const [showModal, setShowModal] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
     const [expandedProduct, setExpandedProduct] = useState(null);
+    const [actionMenuOpen, setActionMenuOpen] = useState(null);
     const [successMsg, setSuccessMsg] = useState('');
     const [formError, setFormError] = useState('');
     const [formLoading, setFormLoading] = useState(false);
@@ -225,18 +226,7 @@ function Products() {
                     <p className="text-sm text-slate-500">{t('manage_catalog')}</p>
                 </div>
                 <div className="flex gap-3">
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <span className="material-symbols-outlined text-slate-400">search</span>
-                        </div>
-                        <input
-                            className="block w-64 rounded-xl border-slate-200 py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-primary shadow-sm transition-all"
-                            placeholder="Search products..."
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
+
                     <button
                         onClick={handleOpenAdd}
                         className="flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/30 transition-all active:scale-95"
@@ -311,18 +301,16 @@ function Products() {
                 </div>
 
                 {/* Product Table */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden auto-cols-auto">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full text-left border-collapse whitespace-nowrap">
                             <thead>
                                 <tr className="border-b border-slate-200 bg-slate-50/50">
-                                    <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 w-[30%]">Product</th>
+                                    <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 w-[50%]">Product</th>
                                     <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 w-[12%]">Category</th>
                                     <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 w-[12%]">Brand</th>
-                                    <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 w-[12%]">Variants</th>
-                                    <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 w-[14%]">Stock</th>
                                     <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 text-right w-[10%]">Price</th>
-                                    <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 text-right w-[10%]">Actions</th>
+                                    <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 text-right w-[16%]">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -357,7 +345,7 @@ function Products() {
                                                         onClick={() => setExpandedProduct(isExpanded ? null : product.id)}
                                                     >
                                                         {/* Product info */}
-                                                        <div className="flex items-center gap-3 w-[30%]">
+                                                        <div className="flex items-center gap-3 w-[50%] min-w-0 pr-2">
                                                             <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-500 shrink-0 overflow-hidden">
                                                                 {product.image_url ? (
                                                                     <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
@@ -365,8 +353,8 @@ function Products() {
                                                                     <span className="material-symbols-outlined text-[20px]">checkroom</span>
                                                                 )}
                                                             </div>
-                                                            <div>
-                                                                <p className="text-sm font-medium text-slate-900">{product.name}</p>
+                                                            <div className="min-w-0">
+                                                                <p className="text-sm font-medium text-slate-900 truncate">{product.name}</p>
                                                                 <p className="text-xs text-slate-500">ID: #{product.id}</p>
                                                             </div>
                                                         </div>
@@ -376,27 +364,52 @@ function Products() {
                                                             </span>
                                                         </div>
                                                         <div className="w-[12%]">
-                                                            <span className="text-sm text-slate-600">{product.brand || '—'}</span>
-                                                        </div>
-                                                        <div className="w-[12%]">
-                                                            <span className="text-sm text-slate-600">{variants.length} variant{variants.length !== 1 ? 's' : ''}</span>
-                                                        </div>
-                                                        <div className="w-[14%]">
-                                                            {getStockBadge(totalStock)}
+                                                            <span className="text-sm text-slate-600 truncate block pr-2">{product.brand || '—'}</span>
                                                         </div>
                                                         <div className="w-[10%] text-right">
                                                             <span className="text-sm font-semibold text-slate-900">
                                                                 {minPrice === maxPrice ? `$${minPrice.toFixed(2)}` : `$${minPrice.toFixed(2)}–$${maxPrice.toFixed(2)}`}
                                                             </span>
                                                         </div>
-                                                        <div className="w-[10%] flex justify-end items-center gap-1">
-                                                            <button onClick={(e) => { e.stopPropagation(); handleOpenEdit(product); }} className="p-2 rounded-lg text-slate-400 hover:text-primary hover:bg-slate-100 transition-all" title="Edit">
-                                                                <span className="material-symbols-outlined text-[18px]">edit</span>
+                                                        <div className="w-[16%] flex justify-end items-center gap-1 shrink-0 relative">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setActionMenuOpen(actionMenuOpen === product.id ? null : product.id);
+                                                                }}
+                                                                className={`p-2 rounded-lg transition-all ${actionMenuOpen === product.id ? 'text-primary bg-slate-100' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                                                            >
+                                                                <span className="material-symbols-outlined text-[18px]">more_vert</span>
                                                             </button>
-                                                            <button onClick={(e) => { e.stopPropagation(); handleDelete(product.id, product.name); }} className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all" title="Delete">
-                                                                <span className="material-symbols-outlined text-[18px]">delete</span>
+
+                                                            {actionMenuOpen === product.id && (
+                                                                <>
+                                                                    <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setActionMenuOpen(null); }}></div>
+                                                                    <div className="absolute right-10 top-8 w-36 bg-white rounded-xl shadow-lg border border-slate-100 py-1.5 z-20 flex flex-col overflow-hidden animate-fade-in-up transition-all">
+                                                                        <button
+                                                                            onClick={(e) => { e.stopPropagation(); handleOpenEdit(product); setActionMenuOpen(null); }}
+                                                                            className="w-full text-left px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-primary flex items-center gap-2"
+                                                                        >
+                                                                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                                                                            Edit
+                                                                        </button>
+                                                                        <div className="h-px bg-slate-100 w-full my-1"></div>
+                                                                        <button
+                                                                            onClick={(e) => { e.stopPropagation(); handleDelete(product.id, product.name); setActionMenuOpen(null); }}
+                                                                            className="w-full text-left px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 flex items-center gap-2"
+                                                                        >
+                                                                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                                            Delete
+                                                                        </button>
+                                                                    </div>
+                                                                </>
+                                                            )}
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); setExpandedProduct(isExpanded ? null : product.id); }}
+                                                                className="p-2 rounded-lg text-slate-400 hover:text-primary hover:bg-slate-50 transition-all"
+                                                            >
+                                                                <span className={`material-symbols-outlined text-[18px] transition-transform ${isExpanded ? 'rotate-180' : ''}`}>expand_more</span>
                                                             </button>
-                                                            <span className={`material-symbols-outlined text-[18px] text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>expand_more</span>
                                                         </div>
                                                     </div>
 

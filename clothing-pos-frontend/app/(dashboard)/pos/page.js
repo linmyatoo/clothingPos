@@ -303,45 +303,47 @@ function POS() {
                                 <span className="material-symbols-outlined">close</span>
                             </button>
                         </div>
-                        <div className="overflow-y-auto p-6 flex-1">
+                        <div className="overflow-auto p-6 flex-1">
                             {todayStats.sales.length === 0 ? (
                                 <div className="text-center py-12 text-slate-500">
                                     <span className="material-symbols-outlined text-4xl mb-3 opacity-50">receipt_long</span>
                                     <p>No transactions today yet.</p>
                                 </div>
                             ) : (
-                                <table className="w-full text-left text-sm">
-                                    <thead>
-                                        <tr className="text-slate-400 border-b border-slate-100">
-                                            <th className="pb-3 font-medium">Invoice No.</th>
-                                            <th className="pb-3 font-medium">Time</th>
-                                            <th className="pb-3 font-medium">Cashier</th>
-                                            <th className="pb-3 font-medium">Payment</th>
-                                            <th className="pb-3 font-medium text-right">Amount</th>
-                                            <th className="pb-3 font-medium text-right">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-50">
-                                        {todayStats.sales.map((sale) => (
-                                            <tr key={sale.id} className="group hover:bg-slate-50 transition-colors">
-                                                <td className="py-4 font-medium text-slate-900">#{sale.invoice_number}</td>
-                                                <td className="py-4 text-slate-500">
-                                                    {new Date(sale.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </td>
-                                                <td className="py-4 text-slate-700">{sale.cashier_name}</td>
-                                                <td className="py-4 text-slate-700 capitalize">{sale.payment_method}</td>
-                                                <td className="py-4 text-right font-bold text-slate-900">
-                                                    ${parseFloat(sale.total_amount).toFixed(2)}
-                                                </td>
-                                                <td className="py-4 text-right">
-                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">
-                                                        Paid
-                                                    </span>
-                                                </td>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-sm whitespace-nowrap">
+                                        <thead>
+                                            <tr className="text-slate-400 border-b border-slate-100">
+                                                <th className="pb-3 font-medium">Invoice No.</th>
+                                                <th className="pb-3 font-medium">Time</th>
+                                                <th className="pb-3 font-medium">Cashier</th>
+                                                <th className="pb-3 font-medium">Payment</th>
+                                                <th className="pb-3 font-medium text-right">Amount</th>
+                                                <th className="pb-3 font-medium text-right">Status</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-50">
+                                            {todayStats.sales.map((sale) => (
+                                                <tr key={sale.id} className="group hover:bg-slate-50 transition-colors">
+                                                    <td className="py-4 font-medium text-slate-900">#{sale.invoice_number}</td>
+                                                    <td className="py-4 text-slate-500">
+                                                        {new Date(sale.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </td>
+                                                    <td className="py-4 text-slate-700">{sale.cashier_name}</td>
+                                                    <td className="py-4 text-slate-700 capitalize">{sale.payment_method}</td>
+                                                    <td className="py-4 text-right font-bold text-slate-900">
+                                                        ${parseFloat(sale.total_amount).toFixed(2)}
+                                                    </td>
+                                                    <td className="py-4 text-right">
+                                                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">
+                                                            Paid
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             )}
                         </div>
                     </div>

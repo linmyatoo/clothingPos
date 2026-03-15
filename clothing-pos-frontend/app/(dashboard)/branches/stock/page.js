@@ -181,8 +181,8 @@ function BranchStock() {
                             key={cat}
                             onClick={() => setCategoryFilter(cat)}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${categoryFilter === cat
-                                    ? 'bg-primary text-white shadow-sm'
-                                    : 'bg-white text-slate-600 border border-slate-200 hover:border-primary/50 hover:text-primary'
+                                ? 'bg-primary text-white shadow-sm'
+                                : 'bg-white text-slate-600 border border-slate-200 hover:border-primary/50 hover:text-primary'
                                 }`}
                         >
                             {cat}
@@ -210,8 +210,8 @@ function BranchStock() {
                         <p className="text-sm mt-1">Add products in the Products page first.</p>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                        <table className="w-full text-left border-collapse">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+                        <table className="w-full text-left border-collapse whitespace-nowrap">
                             <thead>
                                 <tr className="bg-slate-50/50 border-b border-slate-100">
                                     <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Product</th>
@@ -273,12 +273,12 @@ function BranchStock() {
                                                     />
                                                 ) : (
                                                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-sm font-semibold ${stockLevel === 'out' ? 'bg-red-50 text-red-700' :
-                                                            stockLevel === 'low' ? 'bg-amber-50 text-amber-700' :
-                                                                'bg-emerald-50 text-emerald-700'
+                                                        stockLevel === 'low' ? 'bg-amber-50 text-amber-700' :
+                                                            'bg-emerald-50 text-emerald-700'
                                                         }`}>
                                                         <span className={`w-1.5 h-1.5 rounded-full ${stockLevel === 'out' ? 'bg-red-500' :
-                                                                stockLevel === 'low' ? 'bg-amber-500' :
-                                                                    'bg-emerald-500'
+                                                            stockLevel === 'low' ? 'bg-amber-500' :
+                                                                'bg-emerald-500'
                                                             }`}></span>
                                                         {item.stock_quantity}
                                                     </span>
