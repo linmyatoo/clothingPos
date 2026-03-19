@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: pos-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: clothing_pos
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      # Uncomment the next line if you want to initialize the database from a script
+      # - ./clothing-pos-backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  minio:
+    image: minio/minio
+    container_name: pos-minio
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+
+  backend:
+    build:
+      context: ./clothing-pos-backend
+      dockerfile: Dockerfile
+    container_name: pos-backend
+    restart: always
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=rootpassword
+      - DB_NAME=clothing_pos
+      - JWT_SECRET=your_super_secret_jwt_key_here
+      - JWT_EXPIRES_IN=7d
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_USE_SSL=false
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin123
+      - MINIO_BUCKET=product-images
+    depends_on:
+      - db
+      - minio
+
+volumes:
+  db-data:
+  minio-data:
