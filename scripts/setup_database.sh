@@ -6,10 +6,10 @@
 # against the MariaDB container (pos-db).
 #
 # Usage:
-#   ./scripts/setup_database.sh              # interactive menu
-#   ./scripts/setup_database.sh --fresh      # fresh setup (schema.sql)
-#   ./scripts/setup_database.sh --migrate    # migration only
-#   ./scripts/setup_database.sh --all        # fresh + migration
+#   bash scripts/setup_database.sh              # interactive menu
+#   bash scripts/setup_database.sh --fresh      # fresh setup (schema.sql)
+#   bash scripts/setup_database.sh --migrate    # migration only
+#   bash scripts/setup_database.sh --all        # fresh + migration
 # ============================================
 
 set -e
@@ -34,16 +34,16 @@ MIGRATION_FILE="$PROJECT_ROOT/clothing-pos-backend/migration_add_branches.sql"
 
 # ── Helpers ──
 print_header() {
-  echo ""
-  echo -e "${CYAN}============================================${NC}"
-  echo -e "${CYAN}  Clothing POS — Database Setup (Docker)${NC}"
-  echo -e "${CYAN}============================================${NC}"
-  echo ""
+  printf "\n"
+  printf "${CYAN}============================================${NC}\n"
+  printf "${CYAN}  Clothing POS — Database Setup (Docker)${NC}\n"
+  printf "${CYAN}============================================${NC}\n"
+  printf "\n"
 }
 
-print_success() { echo -e "${GREEN}✔  $1${NC}"; }
-print_warning() { echo -e "${YELLOW}⚠  $1${NC}"; }
-print_error()   { echo -e "${RED}✖  $1${NC}"; }
+print_success() { printf "${GREEN}✔  %s${NC}\n" "$1"; }
+print_warning() { printf "${YELLOW}⚠  %s${NC}\n" "$1"; }
+print_error()   { printf "${RED}✖  %s${NC}\n" "$1"; }
 
 usage() {
   echo "Usage: $0 [OPTION]"
@@ -67,20 +67,23 @@ check_container() {
   echo "Checking Docker container '$CONTAINER_NAME' ..."
   if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     print_error "Container '$CONTAINER_NAME' is not running."
-    echo ""
+    printf "\n"
     echo "   Start it with:  docker compose up -d db"
-    echo ""
+    printf "\n"
 
-    # Offer to start it
-    read -rp "   Start it now? (y/N): " start_confirm
-    if [[ "$start_confirm" =~ ^[Yy]$ ]]; then
-      echo "   Starting services ..."
-      docker compose -f "$PROJECT_ROOT/docker-compose.yml" up -d db
-      echo "   Waiting for MariaDB to be ready ..."
-      sleep 5
-    else
-      exit 1
-    fi
+    printf "   Start it now? (y/N): "
+    read start_confirm
+    case "$start_confirm" in
+      y|Y)
+        echo "   Starting services ..."
+        docker compose -f "$PROJECT_ROOT/docker-compose.yml" up -d db
+        echo "   Waiting for MariaDB to be ready ..."
+        sleep 5
+        ;;
+      *)
+        exit 1
+        ;;
+    esac
   fi
   print_success "Container '$CONTAINER_NAME' is running."
 }
@@ -88,7 +91,7 @@ check_container() {
 # ── Wait until MariaDB accepts connections ──
 wait_for_db() {
   echo "Waiting for MariaDB to accept connections ..."
-  local retries=15
+  retries=15
   while [ $retries -gt 0 ]; do
     if docker exec "$CONTAINER_NAME" mariadb -u"$DB_USER" -p"$DB_PASSWORD" -e "SELECT 1;" > /dev/null 2>&1; then
       print_success "MariaDB is ready."
@@ -103,8 +106,8 @@ wait_for_db() {
 
 # ── Run SQL file inside the container ──
 run_sql_file() {
-  local sql_file="$1"
-  local label="$2"
+  sql_file="$1"
+  label="$2"
 
   if [ ! -f "$sql_file" ]; then
     print_error "SQL file not found: $sql_file"
@@ -117,39 +120,43 @@ run_sql_file() {
 
 # ── Fresh Setup ──
 run_fresh_setup() {
-  echo ""
-  echo -e "${CYAN}▸ Running FRESH database setup ...${NC}"
+  printf "\n"
+  printf "${CYAN}▸ Running FRESH database setup ...${NC}\n"
 
   # Check if DB already exists
   if docker exec "$CONTAINER_NAME" mariadb -u"$DB_USER" -p"$DB_PASSWORD" -e "USE $DB_NAME;" 2>/dev/null; then
-    echo ""
+    printf "\n"
     print_warning "Database '$DB_NAME' already exists!"
-    read -rp "   Drop and recreate? This will DELETE all data. (y/N): " confirm
-    if [[ "$confirm" =~ ^[Yy]$ ]]; then
-      echo "   Dropping database '$DB_NAME' ..."
-      docker exec "$CONTAINER_NAME" mariadb -u"$DB_USER" -p"$DB_PASSWORD" -e "DROP DATABASE $DB_NAME;"
-      print_success "Database dropped."
-    else
-      echo "   Aborted."
-      exit 0
-    fi
+    printf "   Drop and recreate? This will DELETE all data. (y/N): "
+    read confirm
+    case "$confirm" in
+      y|Y)
+        echo "   Dropping database '$DB_NAME' ..."
+        docker exec "$CONTAINER_NAME" mariadb -u"$DB_USER" -p"$DB_PASSWORD" -e "DROP DATABASE $DB_NAME;"
+        print_success "Database dropped."
+        ;;
+      *)
+        echo "   Aborted."
+        exit 0
+        ;;
+    esac
   fi
 
   run_sql_file "$SCHEMA_FILE" "schema.sql"
   print_success "Fresh database setup complete!"
 
-  echo ""
-  echo -e "${GREEN}  Database : $DB_NAME${NC}"
-  echo -e "${GREEN}  Default admin login:${NC}"
-  echo -e "${GREEN}    Email    : admin@clothingpos.com${NC}"
-  echo -e "${GREEN}    Password : admin123${NC}"
-  echo ""
+  printf "\n"
+  printf "${GREEN}  Database : %s${NC}\n" "$DB_NAME"
+  printf "${GREEN}  Default admin login:${NC}\n"
+  printf "${GREEN}    Email    : admin@clothingpos.com${NC}\n"
+  printf "${GREEN}    Password : admin123${NC}\n"
+  printf "\n"
 }
 
 # ── Migration ──
 run_migration() {
-  echo ""
-  echo -e "${CYAN}▸ Running MIGRATION (add multi-branch support) ...${NC}"
+  printf "\n"
+  printf "${CYAN}▸ Running MIGRATION (add multi-branch support) ...${NC}\n"
 
   # Check DB exists
   if ! docker exec "$CONTAINER_NAME" mariadb -u"$DB_USER" -p"$DB_PASSWORD" -e "USE $DB_NAME;" 2>/dev/null; then
@@ -158,27 +165,31 @@ run_migration() {
   fi
 
   # Check if migration was already applied
-  local tables
   tables=$(docker exec "$CONTAINER_NAME" mariadb -u"$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "SHOW TABLES LIKE 'branches';" 2>/dev/null)
   if echo "$tables" | grep -q "branches"; then
     print_warning "Table 'branches' already exists — migration may have been applied."
-    read -rp "   Continue anyway? (y/N): " confirm
-    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-      echo "   Aborted."
-      exit 0
-    fi
+    printf "   Continue anyway? (y/N): "
+    read confirm
+    case "$confirm" in
+      y|Y)
+        ;;
+      *)
+        echo "   Aborted."
+        exit 0
+        ;;
+    esac
   fi
 
   run_sql_file "$MIGRATION_FILE" "migration_add_branches.sql"
   print_success "Migration applied successfully!"
 
-  echo ""
-  echo -e "${GREEN}  Changes applied:${NC}"
-  echo -e "${GREEN}    • branches table created${NC}"
-  echo -e "${GREEN}    • branch_id added to users and sales${NC}"
-  echo -e "${GREEN}    • branch_stock table created${NC}"
-  echo -e "${GREEN}    • stock migrated from product_variants → branch_stock${NC}"
-  echo ""
+  printf "\n"
+  printf "${GREEN}  Changes applied:${NC}\n"
+  printf "${GREEN}    • branches table created${NC}\n"
+  printf "${GREEN}    • branch_id added to users and sales${NC}\n"
+  printf "${GREEN}    • branch_stock table created${NC}\n"
+  printf "${GREEN}    • stock migrated from product_variants → branch_stock${NC}\n"
+  printf "\n"
 }
 
 # ── Parse arguments ──
@@ -196,15 +207,16 @@ check_container
 wait_for_db
 
 if [ -z "$MODE" ]; then
-  echo ""
+  printf "\n"
   echo "Select an option:"
-  echo ""
+  printf "\n"
   echo "  1)  Fresh Setup     — Drop & create DB from schema.sql"
   echo "  2)  Run Migration   — Add multi-branch support (migration_add_branches.sql)"
   echo "  3)  Full Setup      — Fresh + Migration in sequence"
   echo "  4)  Exit"
-  echo ""
-  read -rp "Enter choice [1-4]: " choice
+  printf "\n"
+  printf "Enter choice [1-4]: "
+  read choice
 
   case "$choice" in
     1) MODE="fresh" ;;
@@ -221,4 +233,4 @@ case "$MODE" in
   all)     run_fresh_setup; run_migration ;;
 esac
 
-echo -e "${CYAN}Done! 🎉${NC}"
+printf "${CYAN}Done! 🎉${NC}\n"
