@@ -117,6 +117,13 @@ function POS() {
         setCheckoutMsg('');
         setCheckoutError('');
 
+        // Show alert with all chosen items
+        const selectedItemsText = cartItems.map(i =>
+            `- ${i.quantity}x ${i.product.name} (${i.variant.size}${i.variant.color ? ` / ${i.variant.color}` : ''})`
+        ).join('\n');
+
+        alert(`Processing charge for the following items:\n\n${selectedItemsText}\n\nTotal Items: ${cartItems.reduce((acc, i) => acc + i.quantity, 0)}`);
+
         try {
             const items = cartItems.map((i) => ({
                 variant_id: i.variant.id,

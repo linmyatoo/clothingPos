@@ -73,8 +73,8 @@ function Products() {
     // Stats
     const totalProducts = products.length;
     const totalVariants = products.reduce((s, p) => s + (p.Variants?.filter(v => v.id)?.length || 0), 0);
-    const lowStock = products.reduce((s, p) => s + (p.Variants?.filter(v => v.id && v.stock_quantity > 0 && v.stock_quantity <= 5)?.length || 0), 0);
-    const outOfStock = products.reduce((s, p) => s + (p.Variants?.filter(v => v.id && v.stock_quantity === 0)?.length || 0), 0);
+    const lowStock = products.reduce((s, p) => s + (p.Variants?.filter(v => v.id)?.reduce((sum, v) => sum + (v.branch_stocks?.length ? v.branch_stocks.filter(bs => bs.stock_quantity > 0 && bs.stock_quantity <= 5).length : (v.stock_quantity > 0 && v.stock_quantity <= 5 ? 1 : 0)), 0) || 0), 0);
+    const outOfStock = products.reduce((s, p) => s + (p.Variants?.filter(v => v.id)?.reduce((sum, v) => sum + (v.branch_stocks?.length ? v.branch_stocks.filter(bs => bs.stock_quantity === 0).length : (v.stock_quantity === 0 ? 1 : 0)), 0) || 0), 0);
 
     // Unique categories for filter
     const categories = ['All', ...new Set(products.map(p => p.category).filter(Boolean))];

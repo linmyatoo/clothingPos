@@ -277,7 +277,7 @@ function Dashboard() {
                                             </div>
                                         ) : (
                                             lowStockItems.map((item) => (
-                                                <div key={item.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                                                <div key={`${item.id}-${item.branch_id}`} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                                     <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 shrink-0">
                                                         <span className="material-symbols-outlined">checkroom</span>
                                                     </div>
@@ -287,7 +287,7 @@ function Dashboard() {
                                                     </div>
                                                     <div className="text-right">
                                                         <p className="text-sm font-bold text-rose-600">{item.stock_quantity} left</p>
-                                                        <p className="text-[10px] text-text-muted">SKU: {item.sku || 'N/A'}</p>
+                                                        <p className="text-[10px] text-text-muted">{item.branch_name ? `${item.branch_name} • ` : ''}SKU: {item.sku || 'N/A'}</p>
                                                     </div>
                                                 </div>
                                             ))

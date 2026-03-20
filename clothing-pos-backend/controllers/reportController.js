@@ -206,7 +206,7 @@ exports.getDashboardStats = async (req, res, next) => {
     if (bf.param) {
       lowStockQuery = `
         SELECT bs.stock_quantity, pv.id, pv.size, pv.color, pv.sku,
-               p.name AS product_name, b.name AS branch_name
+               p.name AS product_name, b.name AS branch_name, bs.branch_id
         FROM branch_stock bs
         JOIN product_variants pv ON pv.id = bs.variant_id
         JOIN products p ON p.id = pv.product_id
