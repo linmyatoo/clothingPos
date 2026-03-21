@@ -81,4 +81,4 @@ INSERT INTO branches (name, address, phone) VALUES ('Main Branch', 'Default Addr
 
 -- Default admin user (password: admin123)
 INSERT INTO users (name, email, password, role, branch_id) VALUES
-('Admin User', 'admin@clothingpos.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWC', 'admin', 1);
+('Admin User', 'admin@clothingpos.com', '$2a$10$lKjAs3vMQ/5Q7ebRJ978TOMeb8JTe3dfr1xkuaveHNrhUAt90RHO.', 'admin', 1);

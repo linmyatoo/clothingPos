@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import { login } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 
 const Login = () => {
@@ -21,7 +21,7 @@ const Login = () => {
         setError(null);
         setIsLoading(true);
         try {
-            const response = await axios.post('http://localhost:5001/api/auth/login', credentials);
+            const response = await login(credentials);
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify(response.data.user || {}));
             const userRole = response.data.user?.role;

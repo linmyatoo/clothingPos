@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api',
+    baseURL: '/api',
 });
 
 // Attach JWT token to every request
@@ -19,7 +19,9 @@ API.interceptors.request.use((config) => {
 API.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response && error.response.status === 401) {
+        const originalRequest = error.config;
+        // Don't redirect if the error is from the login endpoint itself
+        if (error.response && error.response.status === 401 && originalRequest.url !== '/auth/login') {
             if (typeof window !== 'undefined') {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
