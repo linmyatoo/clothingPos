@@ -97,16 +97,7 @@ function Dashboard() {
                             ))}
                         </select>
                     )}
-                    <div className="relative hidden sm:block">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted material-symbols-outlined text-[20px]">search</span>
-                        <input className="pl-10 pr-4 py-2.5 bg-white rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-64 transition-all shadow-sm" placeholder="Search..." type="text" />
-                    </div>
-                    <button className="relative w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-text-muted hover:text-primary hover:border-primary/30 transition-all shadow-sm">
-                        <span className="material-symbols-outlined text-[20px]">notifications</span>
-                        {lowStockItems.length > 0 && (
-                            <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
-                        )}
-                    </button>
+
                     <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
                         <div className="flex flex-col items-end hidden md:flex">
                             <span className="text-sm font-semibold text-text-main">{user?.name || 'Admin User'}</span>

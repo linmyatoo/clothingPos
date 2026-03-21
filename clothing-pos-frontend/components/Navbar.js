@@ -76,15 +76,7 @@ function Navbar({ children }) {
                                     </Link>
                                 );
                             })}
-                            {isAdmin && (
-                                <Link
-                                    href="#"
-                                    className="group flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-primary transition-all duration-200"
-                                >
-                                    <span className="material-symbols-outlined text-[24px]">settings</span>
-                                    <span className="font-medium">{t('nav_settings')}</span>
-                                </Link>
-                            )}
+
                         </nav>
                     </div>
                     <div className="px-2 border-t border-slate-100 pt-4 mt-auto">

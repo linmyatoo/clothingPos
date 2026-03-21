@@ -7,6 +7,7 @@ import { useLanguage } from '../../context/LanguageContext';
 
 const Login = () => {
     const [credentials, setCredentials] = useState({ email: '', password: '' });
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -96,7 +97,6 @@ const Login = () => {
                                     className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-lg leading-5 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition duration-150 ease-in-out"
                                     id="email"
                                     name="email"
-                                    placeholder="admin@fashionpos.com"
                                     type="email"
                                     value={credentials.email}
                                     onChange={handleChange}
@@ -116,30 +116,19 @@ const Login = () => {
                                     className="block w-full pl-10 pr-10 py-3 border border-slate-200 dark:border-slate-700 rounded-lg leading-5 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition duration-150 ease-in-out"
                                     id="password"
                                     name="password"
-                                    placeholder="••••••••"
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     value={credentials.password}
                                     onChange={handleChange}
                                     required
                                 />
-                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                                    <span className="material-symbols-outlined text-[20px]">visibility</span>
+                                <div 
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">
+                                        {showPassword ? 'visibility_off' : 'visibility'}
+                                    </span>
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Remember Me & Forgot Password */}
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                                <input className="h-4 w-4 text-primary focus:ring-primary border-slate-300 rounded bg-slate-50 dark:bg-slate-800 dark:border-slate-700" id="remember-me" name="remember-me" type="checkbox" />
-                                <label className="ml-2 block text-sm text-slate-600 dark:text-slate-400" htmlFor="remember-me">
-                                    Remember me
-                                </label>
-                            </div>
-                            <div className="text-sm">
-                                <a className="font-medium text-primary hover:text-primary/80 transition-colors" href="#">
-                                    Forgot password?
-                                </a>
                             </div>
                         </div>
 
