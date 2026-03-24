@@ -23,9 +23,12 @@ exports.uploadProductImage = async (req, res, next) => {
             'Content-Type': req.file.mimetype,
         });
 
-        // Build public URL
+        // Build public URL dynamically so it works across different networks/devices
+        // If MINIO_PUBLIC_ENDPOINT is set, use it. Otherwise, use the request's hostname to avoid returning internal Docker names like "minio"
         const protocol = process.env.MINIO_USE_SSL === 'true' ? 'https' : 'http';
-        const imageUrl = `${protocol}://${process.env.MINIO_ENDPOINT || '127.0.0.1'}:${process.env.MINIO_PORT || 9000}/${BUCKET}/${filename}`;
+        const publicHost = process.env.MINIO_PUBLIC_ENDPOINT || req.hostname || '127.0.0.1';
+        const port = process.env.MINIO_PORT || 9000;
+        const imageUrl = `${protocol}://${publicHost}:${port}/${BUCKET}/${filename}`;
 
         // Save URL to database
         await db.query('UPDATE products SET image_url = ? WHERE id = ?', [imageUrl, id]);
