@@ -1,6 +1,7 @@
 const db = require('../config/db');
 const { minioClient, BUCKET } = require('../config/minio');
 const crypto = require('crypto');
+const sharp = require('sharp');
 
 exports.uploadProductImage = async (req, res, next) => {
     const { id } = req.params;
@@ -14,13 +15,18 @@ exports.uploadProductImage = async (req, res, next) => {
         const products = await db.query('SELECT id FROM products WHERE id = ?', [id]);
         if (!products.length) return res.status(404).json({ message: 'Product not found' });
 
-        // Generate unique filename
-        const ext = req.file.originalname.split('.').pop();
-        const filename = `products/${id}/${crypto.randomUUID()}.${ext}`;
+        // Generate unique filename and force .webp extension for compression
+        const filename = `products/${id}/${crypto.randomUUID()}.webp`;
+
+        // Compress and resize image using sharp (Max width 1000px, 80% quality WebP)
+        const compressedBuffer = await sharp(req.file.buffer)
+            .resize({ width: 1000, withoutEnlargement: true })
+            .webp({ quality: 80 })
+            .toBuffer();
 
         // Upload to MinIO
-        await minioClient.putObject(BUCKET, filename, req.file.buffer, req.file.size, {
-            'Content-Type': req.file.mimetype,
+        await minioClient.putObject(BUCKET, filename, compressedBuffer, compressedBuffer.length, {
+            'Content-Type': 'image/webp',
         });
 
         // Build public URL dynamically so it works across different networks/devices
