@@ -42,7 +42,7 @@ const Login = () => {
                     <div className="flex items-center justify-center size-10 rounded-xl bg-primary text-white">
                         <span className="material-symbols-outlined text-[24px]">shopping_bag</span>
                     </div>
-                    <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Youth Fashion Shop</h2>
+                    <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>Youth Fashion Shop</h2>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5">
@@ -152,7 +152,7 @@ const Login = () => {
 
             {/* Simple Footer */}
             <footer className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
-                <p>© 2026 Youth Fashion Shop. All rights reserved.</p>
+                <p>© 2026 <span style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>Youth Fashion Shop</span>. All rights reserved.</p>
             </footer>
         </div>
     );

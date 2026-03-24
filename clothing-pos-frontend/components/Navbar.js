@@ -52,8 +52,8 @@ function Navbar({ children }) {
                                 <span className="material-symbols-outlined text-2xl">storefront</span>
                             </div>
                             <div className="flex flex-col">
-                                <h1 className="text-slate-900 text-lg font-bold leading-tight">Youth Fashion Shop</h1>
-                                <p className="text-slate-500 text-xs font-medium">{isAdmin ? t('pos_admin') : t('pos_cashier')}</p>
+                                <h1 className="text-slate-900 text-lg font-bold leading-tight" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>Youth Fashion Shop</h1>
+                                <p className="text-slate-500 text-xs font-medium" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>{isAdmin ? t('pos_admin') : t('pos_cashier')}</p>
                             </div>
                         </div>
                         <nav className="flex flex-col gap-2">
@@ -107,8 +107,8 @@ function Navbar({ children }) {
                                         <span className="material-symbols-outlined text-2xl">storefront</span>
                                     </div>
                                     <div className="flex flex-col">
-                                        <h1 className="text-slate-900 text-lg font-bold leading-tight">Youth Fashion</h1>
-                                        <p className="text-slate-500 text-xs font-medium">{isAdmin ? t('pos_admin') : t('pos_cashier')}</p>
+                                        <h1 className="text-slate-900 text-lg font-bold leading-tight" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>Youth Fashion</h1>
+                                        <p className="text-slate-500 text-xs font-medium" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>{isAdmin ? t('pos_admin') : t('pos_cashier')}</p>
                                     </div>
                                 </div>
                                 <button onClick={() => setIsSidebarOpen(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-900">
@@ -158,7 +158,7 @@ function Navbar({ children }) {
                         <div className="size-8 rounded-lg bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white shadow-sm">
                             <span className="material-symbols-outlined text-lg">storefront</span>
                         </div>
-                        <h1 className="text-slate-900 text-md font-bold leading-tight flex-1 truncate">Youth Fashion Shop</h1>
+                        <h1 className="text-slate-900 text-md font-bold leading-tight flex-1 truncate" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>Youth Fashion Shop</h1>
                     </div>
                     {isAdmin && (
                         <button

@@ -1,11 +1,17 @@
 import './globals.css';
-import { Inter } from 'next/font/google';
+import { Inter, Playfair_Display } from 'next/font/google';
 import { LanguageProvider } from '../context/LanguageContext';
 
 const inter = Inter({
     subsets: ['latin'],
     display: 'swap',
     variable: '--font-inter',
+});
+
+const playfair = Playfair_Display({
+    subsets: ['latin'],
+    display: 'swap',
+    variable: '--font-playfair',
 });
 
 export const metadata = {
@@ -19,7 +25,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
     return (
-        <html lang="en" className={inter.variable}>
+        <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
             <head>
                 <link
                     rel="stylesheet"
