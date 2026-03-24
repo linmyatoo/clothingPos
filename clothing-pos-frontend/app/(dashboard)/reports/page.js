@@ -124,19 +124,6 @@ function Reports() {
                     <h2 className="text-2xl font-bold text-slate-900">{t('sale_reports')}</h2>
                     <p className="text-sm text-slate-500">Track sales performance and analyze trends.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    {user && (
-                        <div className="flex items-center gap-3 px-3 py-1.5 bg-slate-50 rounded-xl">
-                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-                                {(user.name || 'U').charAt(0).toUpperCase()}
-                            </div>
-                            <div className="text-right">
-                                <p className="text-sm font-semibold text-slate-900">{user.name}</p>
-                                <p className="text-xs text-slate-500 capitalize">{user.role}</p>
-                            </div>
-                        </div>
-                    )}
-                </div>
             </header>
 
             <div className="flex-1 overflow-y-auto p-8">

@@ -98,15 +98,6 @@ function Dashboard() {
                         </select>
                     )}
 
-                    <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
-                        <div className="flex flex-col items-end hidden md:flex">
-                            <span className="text-sm font-semibold text-text-main">{user?.name || 'Admin User'}</span>
-                            <span className="text-xs text-text-muted capitalize">{user?.role || 'admin'}</span>
-                        </div>
-                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg ring-2 ring-white shadow-md">
-                            {(user?.name || 'A').charAt(0).toUpperCase()}
-                        </div>
-                    </div>
                 </div>
             </header>
             <div className="flex-1 overflow-y-auto p-8 pt-2 pb-20">
