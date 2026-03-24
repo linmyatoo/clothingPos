@@ -8,6 +8,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: clothing_pos
+      TZ: Asia/Yangon
     ports:
       - "3306:3306"
     volumes:
@@ -46,6 +47,7 @@ services:
       - DB_NAME=clothing_pos
       - JWT_SECRET=your_super_secret_jwt_key_here
       - JWT_EXPIRES_IN=7d
+      - TZ=Asia/Yangon
       - MINIO_ENDPOINT=minio
       - MINIO_PORT=9000
       - MINIO_USE_SSL=false
