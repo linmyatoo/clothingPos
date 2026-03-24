@@ -2,26 +2,37 @@
 
 import React from 'react';
 
-function Cart({ cartItems, onUpdateQty, onRemove, onCheckout, paymentMethod, setPaymentMethod }) {
+function Cart({ cartItems, onUpdateQty, onRemove, onCheckout, paymentMethod, setPaymentMethod, onClose }) {
     const subtotal = cartItems.reduce((sum, item) => sum + item.variant.selling_price * item.quantity, 0);
     const total = subtotal;
 
     return (
-        <aside className="w-[400px] flex-none bg-white border-l border-slate-100 flex flex-col h-full shadow-xl z-20">
+        <aside className="w-full flex-none bg-white border-l border-slate-100 flex flex-col h-full shadow-xl z-20">
             <div className="flex-none p-5 border-b border-slate-100 flex items-center justify-between">
                 <div>
                     <h2 className="text-lg font-bold text-slate-900">Current Order</h2>
                     <p className="text-sm text-slate-500">Order Walk-in Customer</p>
                 </div>
-                {cartItems.length > 0 && (
-                    <button
-                        onClick={() => cartItems.forEach(i => onRemove(i.variant.id))}
-                        className="text-primary hover:bg-primary/10 p-2 rounded-lg transition-colors"
-                        title="Clear Cart"
-                    >
-                        <span className="material-symbols-outlined">delete_sweep</span>
-                    </button>
-                )}
+                <div className="flex items-center gap-2">
+                    {cartItems.length > 0 && (
+                        <button
+                            onClick={() => cartItems.forEach(i => onRemove(i.variant.id))}
+                            className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors flex items-center justify-center"
+                            title="Clear Cart"
+                        >
+                            <span className="material-symbols-outlined">delete_sweep</span>
+                        </button>
+                    )}
+                    {onClose && (
+                        <button
+                            onClick={onClose}
+                            className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors flex items-center justify-center"
+                            title="Close Cart"
+                        >
+                            <span className="material-symbols-outlined">close</span>
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3">

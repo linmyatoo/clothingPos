@@ -18,6 +18,9 @@ function POS() {
     const [checkoutError, setCheckoutError] = useState('');
     const [todayStats, setTodayStats] = useState({ transactions: 0, revenue: 0, sales: [] });
     const [showHistoryModal, setShowHistoryModal] = useState(false);
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const [user, setUser] = useState(null);
     const router = useRouter();
     const { t } = useLanguage();
@@ -112,17 +115,11 @@ function POS() {
         setCartItems((prev) => prev.filter((i) => i.variant.id !== variantId));
     };
 
-    const handleCheckout = async () => {
+    const executeCheckout = async () => {
         if (cartItems.length === 0) return;
         setCheckoutMsg('');
         setCheckoutError('');
-
-        // Show alert with all chosen items
-        const selectedItemsText = cartItems.map(i =>
-            `- ${i.quantity}x ${i.product.name} (${i.variant.size}${i.variant.color ? ` / ${i.variant.color}` : ''})`
-        ).join('\n');
-
-        alert(`Processing charge for the following items:\n\n${selectedItemsText}\n\nTotal Items: ${cartItems.reduce((acc, i) => acc + i.quantity, 0)}`);
+        setIsProcessing(true);
 
         try {
             const items = cartItems.map((i) => ({
@@ -133,6 +130,8 @@ function POS() {
             const res = await createSale({ items, payment_method: paymentMethod });
             setCheckoutMsg(`Sale complete! Invoice: ${res.data.invoice_number}`);
             setCartItems([]);
+            setIsCartOpen(false);
+            setShowConfirmModal(false);
             fetchProducts();
             fetchTodayStats();
 
@@ -141,6 +140,8 @@ function POS() {
         } catch (err) {
             setCheckoutError(err.response?.data?.message || 'Checkout failed');
             setTimeout(() => setCheckoutError(''), 3000);
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -282,15 +283,125 @@ function POS() {
                 </div>
             </div>
 
-            {/* Right Side Cart Sidebar */}
-            <Cart
-                cartItems={cartItems}
-                onUpdateQty={handleUpdateQty}
-                onRemove={handleRemove}
-                onCheckout={handleCheckout}
-                paymentMethod={paymentMethod}
-                setPaymentMethod={setPaymentMethod}
-            />
+            {/* Floating Cart Button */}
+            {!isCartOpen && (
+                <button
+                    onClick={() => setIsCartOpen(true)}
+                    className="fixed bottom-6 right-6 bg-primary text-white p-4 rounded-full shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] shadow-primary/50 flex items-center justify-center gap-3 hover:-translate-y-1 hover:shadow-primary/60 transition-all z-40 group border-2 border-white/20"
+                >
+                    <div className="relative flex items-center justify-center">
+                        <span className="material-symbols-outlined text-3xl">shopping_cart</span>
+                        {cartItems.length > 0 && (
+                            <span className="absolute -top-3 -right-3 bg-red-500 text-white text-[11px] font-bold min-w-[24px] h-[24px] px-1.5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                                {cartItems.reduce((acc, i) => acc + i.quantity, 0)}
+                            </span>
+                        )}
+                    </div>
+                    {cartItems.length > 0 && (
+                        <div className="flex flex-col items-start pr-2 pl-1 border-l border-white/20 ml-1">
+                            <span className="text-[10px] font-medium text-white/80 uppercase tracking-wider leading-none mb-1">Checkout</span>
+                            <span className="font-bold text-lg leading-none">
+                                ${cartItems.reduce((acc, i) => acc + i.variant.selling_price * i.quantity, 0).toFixed(2)}
+                            </span>
+                        </div>
+                    )}
+                </button>
+            )}
+
+            {/* Right Side Cart Overlay */}
+            {isCartOpen && (
+                <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-sm transition-opacity" onClick={() => setIsCartOpen(false)}>
+                    <div className="h-full w-full max-w-[400px] bg-white shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
+                        <Cart
+                            cartItems={cartItems}
+                            onUpdateQty={handleUpdateQty}
+                            onRemove={handleRemove}
+                            onCheckout={() => setShowConfirmModal(true)}
+                            paymentMethod={paymentMethod}
+                            setPaymentMethod={setPaymentMethod}
+                            onClose={() => setIsCartOpen(false)}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Checkout Confirm Modal */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-900">Confirm Order</h3>
+                                <p className="text-slate-500 text-sm mt-1">Review items before finalizing</p>
+                            </div>
+                            <button
+                                onClick={() => setShowConfirmModal(false)}
+                                className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-500 transition-colors"
+                                disabled={isProcessing}
+                            >
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <div className="overflow-auto p-6 flex-1">
+                            <table className="w-full text-left text-sm whitespace-nowrap">
+                                <thead>
+                                    <tr className="text-slate-400 border-b border-slate-100">
+                                        <th className="pb-3 font-medium">Item</th>
+                                        <th className="pb-3 font-medium">Variant</th>
+                                        <th className="pb-3 font-medium text-center">Qty</th>
+                                        <th className="pb-3 font-medium text-right">Price</th>
+                                        <th className="pb-3 font-medium text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                    {cartItems.map((item) => (
+                                        <tr key={item.variant.id}>
+                                            <td className="py-4 font-medium text-slate-900">{item.product.name}</td>
+                                            <td className="py-4 text-slate-500">{item.variant.size} {item.variant.color ? `/ ${item.variant.color}` : ''}</td>
+                                            <td className="py-4 text-center text-slate-700">{item.quantity}</td>
+                                            <td className="py-4 text-right text-slate-700">${parseFloat(item.variant.selling_price).toFixed(2)}</td>
+                                            <td className="py-4 text-right font-bold text-slate-900">
+                                                ${(parseFloat(item.variant.selling_price) * item.quantity).toFixed(2)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot>
+                                    <tr className="border-t-2 border-slate-100">
+                                        <td colSpan="4" className="py-4 text-right font-bold text-slate-900">Total Amount:</td>
+                                        <td className="py-4 text-right font-bold text-primary text-lg">
+                                            ${cartItems.reduce((acc, i) => acc + i.variant.selling_price * i.quantity, 0).toFixed(2)}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colSpan="4" className="py-2 text-right font-bold text-slate-900">Payment Method:</td>
+                                        <td className="py-2 text-right font-bold text-slate-700 capitalize">
+                                            {paymentMethod}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                            <button
+                                onClick={() => setShowConfirmModal(false)}
+                                disabled={isProcessing}
+                                className="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-100 transition-colors disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={executeCheckout}
+                                disabled={isProcessing}
+                                className="px-6 py-2.5 rounded-xl bg-primary text-white font-medium shadow-md shadow-primary/20 hover:bg-blue-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {isProcessing && <span className="material-symbols-outlined animate-spin text-sm">refresh</span>}
+                                Confirm & Charge
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* History Modal */}
             {showHistoryModal && (
