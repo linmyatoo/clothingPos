@@ -25,6 +25,13 @@ function POS() {
     const router = useRouter();
     const { t } = useLanguage();
 
+    // Helper to securely proxy images over HTTPS by stripping forcing a relative Next.js path
+    const getSecureImageUrl = (url) => {
+        if (!url) return '';
+        const match = url.match(/(\/product-images\/.*)/);
+        return match ? match[1] : url;
+    };
+
     useEffect(() => {
         try {
             const u = JSON.parse(localStorage.getItem('user') || '{}');
@@ -262,7 +269,7 @@ function POS() {
                                     >
                                         <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-slate-100 mb-3 flex items-center justify-center">
                                             {product.image_url ? (
-                                                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                                                <img src={getSecureImageUrl(product.image_url)} alt={product.name} className="w-full h-full object-cover" />
                                             ) : (
                                                 <span className="material-symbols-outlined text-5xl text-slate-300">checkroom</span>
                                             )}

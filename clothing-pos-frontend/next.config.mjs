@@ -10,6 +10,10 @@ const nextConfig = {
                 source: '/api/:path*',
                 destination: `${apiBase}/api/:path*`,
             },
+            {
+                source: '/product-images/:path*',
+                destination: `${apiBase.replace('5001', '9000')}/product-images/:path*`,
+            }
         ];
     },
     images: {

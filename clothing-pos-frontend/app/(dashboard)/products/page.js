@@ -23,6 +23,13 @@ function Products() {
     const [imagePreview, setImagePreview] = useState(null);
     const { t } = useLanguage();
 
+    // Helper to securely proxy HTTP images over HTTPS via Next.js
+    const getSecureImageUrl = (url) => {
+        if (!url) return '';
+        const match = url.match(/(\/product-images\/.*)/);
+        return match ? match[1] : url;
+    };
+
     // Form state
     const [formData, setFormData] = useState({
         name: '', category: 'Men', brand: '', description: '',
@@ -109,7 +116,7 @@ function Products() {
             variants: []
         });
         setImageFile(null);
-        setImagePreview(product.image_url || null);
+        setImagePreview(product.image_url ? getSecureImageUrl(product.image_url) : null);
         setFormError('');
         setShowModal(true);
     };
@@ -348,7 +355,7 @@ function Products() {
                                                         <div className="flex items-center gap-3 w-[50%] min-w-0 pr-2">
                                                             <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-500 shrink-0 overflow-hidden">
                                                                 {product.image_url ? (
-                                                                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                                                                    <img src={getSecureImageUrl(product.image_url)} alt={product.name} className="w-full h-full object-cover" />
                                                                 ) : (
                                                                     <span className="material-symbols-outlined text-[20px]">checkroom</span>
                                                                 )}
