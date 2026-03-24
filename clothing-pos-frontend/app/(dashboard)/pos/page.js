@@ -166,33 +166,46 @@ function POS() {
             <div className="flex-1 flex flex-col h-full bg-background-light overflow-hidden">
                 {/* Modern POS Header overlay */}
                 <div className="flex-none px-6 py-4 space-y-4 bg-background-light/95 backdrop-blur-sm z-10 border-b border-slate-100">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-6">
-                            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Register</h2>
-                            {user?.branch_name && (
-                                <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-[14px]">store</span>
-                                    {user.branch_name}
-                                </span>
-                            )}
-                            <div className="flex items-center gap-4 border-l border-slate-200 pl-6">
-                                <span className="text-sm font-medium text-slate-500">
-                                    Today's Sales: <span className="font-bold text-slate-900 ml-1">{todayStats.transactions}</span>
-                                </span>
-                                <span className="text-sm font-medium text-slate-500">
-                                    Revenue: <span className="font-bold text-emerald-600 ml-1">${parseFloat(todayStats.revenue).toFixed(2)}</span>
-                                </span>
-                                <button onClick={() => setShowHistoryModal(true)} className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors ml-4 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
-                                    <span className="material-symbols-outlined text-[18px]">history</span>
-                                    History
-                                </button>
-                                {user?.role === 'employee' && (
-                                    <button onClick={handleLogout} className="flex items-center gap-2 text-sm font-medium text-red-500 hover:text-white hover:bg-red-500 transition-colors ml-2 bg-white px-3 py-1.5 rounded-lg border border-red-200 shadow-sm">
-                                        <span className="material-symbols-outlined text-[18px]">logout</span>
-                                        Logout
-                                    </button>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+                        <div className="flex items-center justify-between w-full md:w-auto">
+                            <div className="flex items-center gap-3">
+                                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Register</h2>
+                                {user?.branch_name && (
+                                    <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[14px]">store</span>
+                                        {user.branch_name}
+                                    </span>
                                 )}
                             </div>
+                            
+                            {/* History button for mobile screens shown at the top next to Register */}
+                            <div className="block md:hidden">
+                                <button onClick={() => setShowHistoryModal(true)} className="flex items-center justify-center p-2 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-primary transition-colors shadow-sm">
+                                    <span className="material-symbols-outlined text-[20px]">history</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3 md:gap-4 md:border-l border-slate-200 md:pl-6 w-full md:w-auto">
+                            <span className="text-sm font-medium text-slate-500">
+                                Sales: <span className="font-bold text-slate-900 ml-1">{todayStats.transactions}</span>
+                            </span>
+                            <span className="text-sm font-medium text-slate-500">
+                                Rev: <span className="font-bold text-emerald-600 ml-1">${parseFloat(todayStats.revenue).toFixed(2)}</span>
+                            </span>
+                            
+                            {/* History button for desktop screens */}
+                            <button onClick={() => setShowHistoryModal(true)} className="hidden md:flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm shrink-0">
+                                <span className="material-symbols-outlined text-[18px]">history</span>
+                                History
+                            </button>
+                            
+                            {user?.role === 'employee' && (
+                                <button onClick={handleLogout} className="flex items-center gap-2 text-sm font-medium text-red-500 hover:text-white hover:bg-red-500 transition-colors bg-white px-3 py-1.5 rounded-lg border border-red-200 shadow-sm shrink-0 ml-auto md:ml-0">
+                                    <span className="material-symbols-outlined text-[18px]">logout</span>
+                                    <span className="hidden sm:inline">Logout</span>
+                                </button>
+                            )}
                         </div>
                     </div>
                     {checkoutMsg && (
