@@ -6,6 +6,18 @@ function Cart({ cartItems, onUpdateQty, onRemove, onCheckout, paymentMethod, set
     const subtotal = cartItems.reduce((sum, item) => sum + item.variant.selling_price * item.quantity, 0);
     const total = subtotal;
 
+    // Helper to securely proxy HTTP images over HTTPS via Next.js
+    const getSecureImageUrl = (url) => {
+        if (!url) return '';
+        const match = url.match(/(\/product-images\/.*)/);
+        return match ? match[1] : url;
+    };
+
+    const getCartImage = (product) => {
+        if (product.image_url) return getSecureImageUrl(product.image_url);
+        return "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=150&q=80";
+    };
+
     return (
         <aside className="w-full flex-none bg-white border-l border-slate-100 flex flex-col h-full shadow-xl z-20">
             <div className="flex-none p-5 border-b border-slate-100 flex items-center justify-between">
@@ -45,8 +57,8 @@ function Cart({ cartItems, onUpdateQty, onRemove, onCheckout, paymentMethod, set
                 ) : (
                     cartItems.map((item) => (
                         <div key={item.variant.id} className="flex gap-3 bg-background-light p-3 rounded-xl group relative">
-                            {/* Placeholder for product image since we don't have images in the backend yet */}
-                            <div className="size-16 rounded-lg bg-slate-200 bg-cover bg-center shrink-0" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=150&q=80')" }}></div>
+                            {/* Product Image */}
+                            <div className="size-16 rounded-lg bg-slate-200 bg-cover bg-center shrink-0" style={{ backgroundImage: `url('${getCartImage(item.product)}')` }}></div>
 
                             <div className="flex-1 flex flex-col justify-between">
                                 <div className="flex justify-between items-start">
