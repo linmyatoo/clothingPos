@@ -70,12 +70,22 @@ function Employees() {
 
         try {
             if (editingEmployee) {
-                await updateEmployee(editingEmployee.id, {
+                const updateData = {
                     name: formData.name,
                     email: formData.email,
                     role: formData.role,
                     branch_id: formData.branch_id || null,
-                });
+                };
+                
+                if (formData.password && formData.password.length >= 6) {
+                    updateData.password = formData.password;
+                } else if (formData.password && formData.password.length < 6) {
+                    setFormError('Password must be at least 6 characters.');
+                    setFormLoading(false);
+                    return;
+                }
+
+                await updateEmployee(editingEmployee.id, updateData);
                 setSuccessMsg('Employee updated successfully!');
             } else {
                 if (!formData.password || formData.password.length < 6) {
@@ -390,27 +400,29 @@ function Employees() {
                                     </div>
                                 </div>
                             </div>
-                            {!editingEmployee && (
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5" htmlFor="password">Password</label>
-                                    <div className="relative">
-                                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                            <span className="material-symbols-outlined text-[20px] text-slate-400">lock</span>
-                                        </div>
-                                        <input
-                                            className="block w-full rounded-xl border-slate-200 py-2.5 pl-10 pr-10 text-sm placeholder:text-slate-400 focus:border-primary focus:ring-primary shadow-sm"
-                                            id="password"
-                                            placeholder="••••••••"
-                                            type="password"
-                                            value={formData.password}
-                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                            required={!editingEmployee}
-                                            minLength={6}
-                                        />
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-1.5" htmlFor="password">
+                                    {editingEmployee ? 'New Password (Optional)' : 'Password'}
+                                </label>
+                                <div className="relative">
+                                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <span className="material-symbols-outlined text-[20px] text-slate-400">lock</span>
                                     </div>
-                                    <p className="mt-1.5 text-xs text-slate-500">Must be at least 6 characters long.</p>
+                                    <input
+                                        className="block w-full rounded-xl border-slate-200 py-2.5 pl-10 pr-10 text-sm placeholder:text-slate-400 focus:border-primary focus:ring-primary shadow-sm"
+                                        id="password"
+                                        placeholder="••••••••"
+                                        type="password"
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                        required={!editingEmployee}
+                                        minLength={!editingEmployee ? 6 : undefined}
+                                    />
                                 </div>
-                            )}
+                                <p className="mt-1.5 text-xs text-slate-500">
+                                    {editingEmployee ? 'Leave blank to keep current password.' : 'Must be at least 6 characters long.'}
+                                </p>
+                            </div>
                             <div className="flex items-center gap-3 pt-4">
                                 <button
                                     className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition-all"

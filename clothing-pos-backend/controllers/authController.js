@@ -120,13 +120,21 @@ exports.createEmployee = async (req, res, next) => {
 
 exports.updateEmployee = async (req, res, next) => {
     const { id } = req.params;
-    const { name, email, role, branch_id } = req.body;
+    const { name, email, role, branch_id, password } = req.body;
 
     try {
-        await db.query(
-            'UPDATE users SET name = ?, email = ?, role = ?, branch_id = ? WHERE id = ?',
-            [name, email, role, branch_id || null, id]
-        );
+        if (password) {
+            const hashed = await bcrypt.hash(password, 10);
+            await db.query(
+                'UPDATE users SET name = ?, email = ?, role = ?, branch_id = ?, password = ? WHERE id = ?',
+                [name, email, role, branch_id || null, hashed, id]
+            );
+        } else {
+            await db.query(
+                'UPDATE users SET name = ?, email = ?, role = ?, branch_id = ? WHERE id = ?',
+                [name, email, role, branch_id || null, id]
+            );
+        }
         res.json({ message: 'User updated' });
     } catch (err) {
         next(err);
