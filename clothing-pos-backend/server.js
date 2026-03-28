@@ -44,6 +44,9 @@ db.getConnection()
 initBucket();
 
 // Routes
+app.get('/', (req, res) => {
+    res.json({ message: 'Clothing POS API is running smoothly', version: '1.0' });
+});
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/sales', saleRoutes);
