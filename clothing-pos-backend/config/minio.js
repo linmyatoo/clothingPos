@@ -25,7 +25,7 @@ const initBucket = async () => {
             Statement: [
                 {
                     Effect: 'Allow',
-                    Principal: { AWS: ['*'] },
+                    Principal: '*',
                     Action: ['s3:GetObject'],
                     Resource: [`arn:aws:s3:::${BUCKET}/*`],
                 },
