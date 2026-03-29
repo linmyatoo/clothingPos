@@ -62,7 +62,6 @@ export const uploadProductImage = (productId, file) => {
 
     return axios.post(`${apiUrl}/products/${productId}/image`, formData, {
         headers: { 
-            'Content-Type': 'multipart/form-data',
             'Authorization': token ? `Bearer ${token}` : ''
         },
     });
