@@ -57,7 +57,7 @@ export const uploadProductImage = (productId, file) => {
     
     // We intentionally bypass the /api proxy for multipart/form-data because Next.js 
     // rewrites struggles with streaming binary data over HTTPS, causing 'write EPROTO' errors.
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    const apiUrl = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
 
     return axios.post(`${apiUrl}/products/${productId}/image`, formData, {
