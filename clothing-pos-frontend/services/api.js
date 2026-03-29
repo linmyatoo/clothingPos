@@ -54,8 +54,17 @@ export const getLowStock = (branchId) => API.get('/products/low-stock', { params
 export const uploadProductImage = (productId, file) => {
     const formData = new FormData();
     formData.append('image', file);
-    return API.post(`/products/${productId}/image`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+    
+    // We intentionally bypass the /api proxy for multipart/form-data because Next.js 
+    // rewrites struggles with streaming binary data over HTTPS, causing 'write EPROTO' errors.
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+
+    return axios.post(`${apiUrl}/products/${productId}/image`, formData, {
+        headers: { 
+            'Content-Type': 'multipart/form-data',
+            'Authorization': token ? `Bearer ${token}` : ''
+        },
     });
 };
 

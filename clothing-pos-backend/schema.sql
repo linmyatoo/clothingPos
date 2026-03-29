@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS product_variants (
   id INT AUTO_INCREMENT PRIMARY KEY,
   product_id INT NOT NULL,
-  size ENUM('XS', 'S', 'M', 'L', 'XL', 'XXL') NOT NULL,
+  size VARCHAR(50) NOT NULL,
   color VARCHAR(50) NOT NULL,
   cost_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
   selling_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
