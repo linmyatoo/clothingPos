@@ -61,8 +61,19 @@ export async function compressImage(file, options = {}) {
         // Try createImageBitmap first — handles most formats including HEIC on modern browsers
         bitmap = await createImageBitmap(processedFile);
     } catch {
-        // Fallback: load via <img> + object URL (works on more browsers for standard formats)
-        bitmap = await loadImageFallback(processedFile);
+        try {
+            // Fallback: load via <img> + object URL (works on more browsers for standard formats)
+            bitmap = await loadImageFallback(processedFile);
+        } catch {
+            // If HEIC and nothing worked in the browser, return the original file.
+            // The backend's sharp (libvips) has much better HEIC support and will
+            // handle the conversion server-side.
+            if (isHeic) {
+                console.info('HEIC cannot be processed in this browser. Uploading original for server-side conversion.');
+                return file;
+            }
+            throw new Error(`Cannot load image: ${file.name}. Format may not be supported by this browser.`);
+        }
     }
 
     // Calculate scaled dimensions
