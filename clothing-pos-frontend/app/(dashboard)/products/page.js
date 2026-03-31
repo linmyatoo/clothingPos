@@ -206,9 +206,14 @@ function Products() {
                 setSuccessMsg(t('product_created'));
             }
 
-            // Upload image if selected
+            // Upload image if selected — separate try/catch so product still saves if image fails
             if (imageFile && productId) {
-                await uploadProductImage(productId, imageFile);
+                try {
+                    await uploadProductImage(productId, imageFile);
+                } catch (imgErr) {
+                    console.error('Image upload failed:', imgErr);
+                    setSuccessMsg(prev => prev + ' (⚠️ Image upload failed — you can try again by editing the product)');
+                }
             }
 
             setShowModal(false);
