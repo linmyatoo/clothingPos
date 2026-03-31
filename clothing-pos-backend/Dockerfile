@@ -4,9 +4,6 @@ FROM node:20-alpine
 # Create app directory
 WORKDIR /usr/src/app
 
-# Install dependencies for sharp HEIC support
-RUN apk add --no-cache vips-dev
-
 # Install dependencies first (for better caching)
 COPY package*.json ./
 RUN npm install --production
