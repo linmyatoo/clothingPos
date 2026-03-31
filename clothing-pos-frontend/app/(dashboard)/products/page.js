@@ -375,7 +375,7 @@ function Products() {
                                                         </div>
                                                         <div className="w-[10%] text-right">
                                                             <span className="text-sm font-semibold text-slate-900">
-                                                                {minPrice === maxPrice ? `$${minPrice.toFixed(2)}` : `$${minPrice.toFixed(2)}–$${maxPrice.toFixed(2)}`}
+                                                                {minPrice === maxPrice ? `${minPrice.toFixed(2)} MMK` : `${minPrice.toFixed(2)} MMK–${maxPrice.toFixed(2)} MMK`}
                                                             </span>
                                                         </div>
                                                         <div className="w-[16%] flex justify-end items-center gap-1 shrink-0 relative">
@@ -445,11 +445,11 @@ function Products() {
                                                                                     </div>
                                                                                     <div>
                                                                                         <span className="text-xs text-slate-400 block">Cost</span>
-                                                                                        <span className="text-slate-600">${parseFloat(v.cost_price || 0).toFixed(2)}</span>
+                                                                                        <span className="text-slate-600">{parseFloat(v.cost_price || 0).toFixed(2)} MMK</span>
                                                                                     </div>
                                                                                     <div>
                                                                                         <span className="text-xs text-slate-400 block">Price</span>
-                                                                                        <span className="font-semibold text-slate-900">${parseFloat(v.selling_price || 0).toFixed(2)}</span>
+                                                                                        <span className="font-semibold text-slate-900">{parseFloat(v.selling_price || 0).toFixed(2)} MMK</span>
                                                                                     </div>
                                                                                     <div>
                                                                                         <span className="text-xs text-slate-400 block">Total Stock</span>
@@ -686,11 +686,11 @@ function Products() {
                                                         <input className="block w-full rounded-lg border-slate-200 text-sm py-2" placeholder="e.g. WT-001" value={v.sku} onChange={(e) => handleVariantChange(idx, 'sku', e.target.value)} />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium text-slate-500 mb-1">Cost Price ($)</label>
+                                                        <label className="block text-xs font-medium text-slate-500 mb-1">Cost Price (MMK)</label>
                                                         <input className="block w-full rounded-lg border-slate-200 text-sm py-2" type="number" step="0.01" placeholder="0.00" value={v.cost_price} onChange={(e) => handleVariantChange(idx, 'cost_price', e.target.value)} />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium text-slate-500 mb-1">Selling Price ($)</label>
+                                                        <label className="block text-xs font-medium text-slate-500 mb-1">Selling Price (MMK)</label>
                                                         <input className="block w-full rounded-lg border-slate-200 text-sm py-2" type="number" step="0.01" placeholder="0.00" value={v.selling_price} onChange={(e) => handleVariantChange(idx, 'selling_price', e.target.value)} required />
                                                     </div>
                                                     <div>

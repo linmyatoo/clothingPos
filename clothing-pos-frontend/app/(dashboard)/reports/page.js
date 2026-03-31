@@ -228,7 +228,7 @@ function Reports() {
                             </div>
                             <p className="text-slate-500 text-sm font-medium mb-1">Total Revenue</p>
                             <h3 className="text-slate-900 text-3xl font-bold tracking-tight">
-                                {loading ? '—' : `$${totalRevenue.toFixed(2)}`}
+                                {loading ? '—' : `${totalRevenue.toFixed(2)} MMK`}
                             </h3>
                         </div>
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 group hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
@@ -240,7 +240,7 @@ function Reports() {
                             </div>
                             <p className="text-slate-500 text-sm font-medium mb-1">Avg. Transaction</p>
                             <h3 className="text-slate-900 text-3xl font-bold tracking-tight">
-                                {loading ? '—' : `$${avgTransaction.toFixed(2)}`}
+                                {loading ? '—' : `${avgTransaction.toFixed(2)} MMK`}
                             </h3>
                         </div>
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 group hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
@@ -252,7 +252,7 @@ function Reports() {
                             </div>
                             <p className="text-slate-500 text-sm font-medium mb-1">Total Profit</p>
                             <h3 className="text-slate-900 text-3xl font-bold tracking-tight">
-                                {loading ? '—' : `$${totalProfit.toFixed(2)}`}
+                                {loading ? '—' : `${totalProfit.toFixed(2)} MMK`}
                             </h3>
                         </div>
                     </div>
@@ -293,11 +293,11 @@ function Reports() {
                                             </defs>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                                             <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
-                                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(value) => `$${value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value}`} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(value) => `${value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value} MMK`} />
                                             <Tooltip
                                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
                                                 itemStyle={{ color: '#0f172a', fontWeight: 'bold' }}
-                                                formatter={(value) => [`$${value.toFixed(2)}`, 'Revenue']}
+                                                formatter={(value) => [`${value.toFixed(2)} MMK`, 'Revenue']}
                                                 labelStyle={{ color: '#64748b', marginBottom: '4px' }}
                                             />
                                             <Area type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" activeDot={{ r: 6, strokeWidth: 0 }} />
@@ -319,7 +319,7 @@ function Reports() {
                                         </div>
                                         <span className="text-sm font-medium text-slate-700">Revenue</span>
                                     </div>
-                                    <span className="text-sm font-bold text-slate-900">${totalRevenue.toFixed(2)}</span>
+                                    <span className="text-sm font-bold text-slate-900">{totalRevenue.toFixed(2)} MMK</span>
                                 </div>
                                 <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl">
                                     <div className="flex items-center gap-3">
@@ -337,7 +337,7 @@ function Reports() {
                                         </div>
                                         <span className="text-sm font-medium text-slate-700">Avg. Order</span>
                                     </div>
-                                    <span className="text-sm font-bold text-slate-900">${avgTransaction.toFixed(2)}</span>
+                                    <span className="text-sm font-bold text-slate-900">{avgTransaction.toFixed(2)} MMK</span>
                                 </div>
                                 {tab === 'daily' && data?.sales && (
                                     <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl">
@@ -372,7 +372,7 @@ function Reports() {
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-semibold text-slate-900">{label}</p>
-                                                    <p className="text-xs text-emerald-600">${parseFloat(best.revenue).toFixed(2)} · {best.transactions} orders</p>
+                                                    <p className="text-xs text-emerald-600">{parseFloat(best.revenue).toFixed(2)} MMK · {best.transactions} orders</p>
                                                 </div>
                                             </div>
                                         );
@@ -451,7 +451,7 @@ function Reports() {
                                                             {(s.payment_method || 'cash').toUpperCase()}
                                                         </span>
                                                     </td>
-                                                    <td className="py-4 px-6 text-right font-semibold text-slate-900">${parseFloat(s.total_amount).toFixed(2)}</td>
+                                                    <td className="py-4 px-6 text-right font-semibold text-slate-900">{parseFloat(s.total_amount).toFixed(2)} MMK</td>
                                                     <td className="py-4 px-6 text-right">
                                                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/10">
                                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -468,7 +468,7 @@ function Reports() {
                                                         </span>
                                                     </td>
                                                     <td className="py-4 px-6 text-right text-slate-700">{d.transactions}</td>
-                                                    <td className="py-4 px-6 text-right font-semibold text-slate-900">${parseFloat(d.revenue).toFixed(2)}</td>
+                                                    <td className="py-4 px-6 text-right font-semibold text-slate-900">{parseFloat(d.revenue).toFixed(2)} MMK</td>
                                                 </tr>
                                             ))}
                                             {tab === 'yearly' && data?.monthly?.map((m) => (
@@ -477,7 +477,7 @@ function Reports() {
                                                         <span className="font-semibold text-slate-900">{MONTH_NAMES[m.month - 1]}</span>
                                                     </td>
                                                     <td className="py-4 px-6 text-right text-slate-700">{m.transactions}</td>
-                                                    <td className="py-4 px-6 text-right font-semibold text-slate-900">${parseFloat(m.revenue).toFixed(2)}</td>
+                                                    <td className="py-4 px-6 text-right font-semibold text-slate-900">{parseFloat(m.revenue).toFixed(2)} MMK</td>
                                                 </tr>
                                             ))}
                                         </>
@@ -491,7 +491,7 @@ function Reports() {
                                 <span className="font-semibold text-slate-900">{getTableRows().length}</span> {tab === 'daily' ? 'transactions' : 'periods'}
                             </p>
                             <p className="text-sm text-slate-500">
-                                Total: <span className="font-bold text-slate-900">${totalRevenue.toFixed(2)}</span>
+                                Total: <span className="font-bold text-slate-900">{totalRevenue.toFixed(2)} MMK</span>
                             </p>
                         </div>
                     </div>

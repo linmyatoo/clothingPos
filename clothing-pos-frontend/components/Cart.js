@@ -66,7 +66,7 @@ function Cart({ cartItems, onUpdateQty, onRemove, onCheckout, paymentMethod, set
                                         <h4 className="font-semibold text-slate-900 text-sm leading-tight max-w-[140px] truncate">{item.product.name}</h4>
                                         <p className="text-xs text-slate-500 mt-0.5">Size: {item.variant.size} • Color: {item.variant.color}</p>
                                     </div>
-                                    <p className="font-bold text-slate-900 text-sm">${(parseFloat(item.variant.selling_price) * item.quantity).toFixed(2)}</p>
+                                    <p className="font-bold text-slate-900 text-sm">{(parseFloat(item.variant.selling_price) * item.quantity).toFixed(2)} MMK</p>
                                 </div>
                                 <div className="flex items-center justify-between mt-2">
                                     <div className="flex items-center bg-white rounded-lg border border-slate-200 h-7">
@@ -78,7 +78,7 @@ function Cart({ cartItems, onUpdateQty, onRemove, onCheckout, paymentMethod, set
                                             <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span>
                                         </button>
                                     </div>
-                                    <span className="text-xs text-slate-500">${parseFloat(item.variant.selling_price).toFixed(2)}/ea</span>
+                                    <span className="text-xs text-slate-500">{parseFloat(item.variant.selling_price).toFixed(2)} MMK/ea</span>
                                 </div>
                             </div>
                         </div>
@@ -86,26 +86,16 @@ function Cart({ cartItems, onUpdateQty, onRemove, onCheckout, paymentMethod, set
                 )}
             </div>
 
-            <div className="flex-none px-5 py-3 border-t border-slate-100 bg-background-light/30">
-                <div className="flex gap-2 mb-2">
-                    <button className="flex-1 py-2 rounded-lg border border-dashed border-slate-300 text-slate-500 text-xs font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-1">
-                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>percent</span> Add Discount
-                    </button>
-                    <button className="flex-1 py-2 rounded-lg border border-dashed border-slate-300 text-slate-500 text-xs font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-1">
-                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>sticky_note_2</span> Add Note
-                    </button>
-                </div>
-            </div>
 
             <div className="flex-none bg-white p-5 pt-3 border-t border-slate-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-30">
                 <div className="space-y-2 mb-4">
                     <div className="flex justify-between text-sm text-slate-500">
                         <span>Subtotal</span>
-                        <span>${subtotal.toFixed(2)}</span>
+                        <span>{subtotal.toFixed(2)} MMK</span>
                     </div>
                     <div className="flex justify-between items-end pt-2">
                         <span className="text-base font-bold text-slate-900">Total</span>
-                        <span className="text-2xl font-bold text-slate-900">${total.toFixed(2)}</span>
+                        <span className="text-2xl font-bold text-slate-900">{total.toFixed(2)} MMK</span>
                     </div>
                 </div>
 
@@ -146,7 +136,7 @@ function Cart({ cartItems, onUpdateQty, onRemove, onCheckout, paymentMethod, set
                 >
                     <span className="text-lg">Charge</span>
                     <div className="flex items-center gap-2">
-                        <span className="text-lg opacity-90">${total.toFixed(2)}</span>
+                        <span className="text-lg opacity-90">{total.toFixed(2)} MMK</span>
                         <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
                     </div>
                 </button>

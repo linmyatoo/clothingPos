@@ -121,7 +121,7 @@ function Dashboard() {
                                 </div>
                                 <div>
                                     <p className="text-sm text-text-muted font-medium mb-1">{t('today_sales')}</p>
-                                    <h3 className="text-2xl font-bold text-text-main">${parseFloat(stats?.todayRevenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+                                    <h3 className="text-2xl font-bold text-text-main">{parseFloat(stats?.todayRevenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} MMK</h3>
                                 </div>
                             </div>
                             <div className="bg-surface-light p-6 rounded-2xl shadow-soft border border-slate-100 flex flex-col justify-between group hover:border-primary/20 transition-all duration-300">
@@ -136,7 +136,7 @@ function Dashboard() {
                                 </div>
                                 <div>
                                     <p className="text-sm text-text-muted font-medium mb-1">{t('monthly_revenue')}</p>
-                                    <h3 className="text-2xl font-bold text-text-main">${parseFloat(stats?.monthlyRevenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+                                    <h3 className="text-2xl font-bold text-text-main">{parseFloat(stats?.monthlyRevenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} MMK</h3>
                                 </div>
                             </div>
                             <div className="bg-surface-light p-6 rounded-2xl shadow-soft border border-slate-100 flex flex-col justify-between group hover:border-primary/20 transition-all duration-300">

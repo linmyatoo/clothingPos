@@ -191,7 +191,7 @@ function POS() {
                                 Sales: <span className="font-bold text-slate-900 ml-1">{todayStats.transactions}</span>
                             </span>
                             <span className="text-sm font-medium text-slate-500">
-                                Rev: <span className="font-bold text-emerald-600 ml-1">${parseFloat(todayStats.revenue).toFixed(2)}</span>
+                                Rev: <span className="font-bold text-emerald-600 ml-1">{parseFloat(todayStats.revenue).toFixed(2)} MMK</span>
                             </span>
                             
                             {/* History button for desktop screens */}
@@ -293,7 +293,7 @@ function POS() {
                                         <h3 className="font-semibold text-slate-900 text-sm mb-1 truncate">{product.name}</h3>
                                         <div className="mt-auto flex items-center justify-between">
                                             <p className="text-slate-500 text-xs truncate max-w-[80px]">{product.brand || 'No Brand'}</p>
-                                            <p className="font-bold text-primary text-sm">${parseFloat(variant.selling_price).toFixed(2)}</p>
+                                            <p className="font-bold text-primary text-sm">{parseFloat(variant.selling_price).toFixed(2)} MMK</p>
                                         </div>
                                     </div>
                                 );
@@ -321,7 +321,7 @@ function POS() {
                         <div className="flex flex-col items-start pr-2 pl-1 border-l border-white/20 ml-1">
                             <span className="text-[10px] font-medium text-white/80 uppercase tracking-wider leading-none mb-1">Checkout</span>
                             <span className="font-bold text-lg leading-none">
-                                ${cartItems.reduce((acc, i) => acc + i.variant.selling_price * i.quantity, 0).toFixed(2)}
+                                {cartItems.reduce((acc, i) => acc + i.variant.selling_price * i.quantity, 0).toFixed(2)} MMK
                             </span>
                         </div>
                     )}
@@ -379,9 +379,9 @@ function POS() {
                                             <td className="py-4 font-medium text-slate-900">{item.product.name}</td>
                                             <td className="py-4 text-slate-500">{item.variant.size} {item.variant.color ? `/ ${item.variant.color}` : ''}</td>
                                             <td className="py-4 text-center text-slate-700">{item.quantity}</td>
-                                            <td className="py-4 text-right text-slate-700">${parseFloat(item.variant.selling_price).toFixed(2)}</td>
+                                            <td className="py-4 text-right text-slate-700">{parseFloat(item.variant.selling_price).toFixed(2)} MMK</td>
                                             <td className="py-4 text-right font-bold text-slate-900">
-                                                ${(parseFloat(item.variant.selling_price) * item.quantity).toFixed(2)}
+                                                {(parseFloat(item.variant.selling_price) * item.quantity).toFixed(2)} MMK
                                             </td>
                                         </tr>
                                     ))}
@@ -390,7 +390,7 @@ function POS() {
                                     <tr className="border-t-2 border-slate-100">
                                         <td colSpan="4" className="py-4 text-right font-bold text-slate-900">Total Amount:</td>
                                         <td className="py-4 text-right font-bold text-primary text-lg">
-                                            ${cartItems.reduce((acc, i) => acc + i.variant.selling_price * i.quantity, 0).toFixed(2)}
+                                            {cartItems.reduce((acc, i) => acc + i.variant.selling_price * i.quantity, 0).toFixed(2)} MMK
                                         </td>
                                     </tr>
                                     <tr>
@@ -431,7 +431,7 @@ function POS() {
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{t('todays_transactions')}</h3>
                                 <p className="text-slate-500 text-sm mt-1">
-                                    {todayStats.transactions} {t('orders_totaling')} ${parseFloat(todayStats.revenue).toFixed(2)}
+                                    {todayStats.transactions} {t('orders_totaling')} {parseFloat(todayStats.revenue).toFixed(2)} MMK
                                 </p>
                             </div>
                             <button
@@ -470,7 +470,7 @@ function POS() {
                                                     <td className="py-4 text-slate-700">{sale.cashier_name}</td>
                                                     <td className="py-4 text-slate-700 capitalize">{sale.payment_method}</td>
                                                     <td className="py-4 text-right font-bold text-slate-900">
-                                                        ${parseFloat(sale.total_amount).toFixed(2)}
+                                                        {parseFloat(sale.total_amount).toFixed(2)} MMK
                                                     </td>
                                                     <td className="py-4 text-right">
                                                         <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">
