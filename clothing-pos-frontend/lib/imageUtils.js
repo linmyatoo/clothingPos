@@ -37,14 +37,32 @@ export async function compressImage(file, options = {}) {
         return file;
     }
 
+    // Convert HEIC/HEIF to JPEG first if needed (most non-Apple browsers can't decode HEIC)
+    let processedFile = file;
+    const isHeic = /\.(heic|heif)$/i.test(file.name) ||
+        file.type === 'image/heic' || file.type === 'image/heif';
+
+    if (isHeic) {
+        try {
+            const heic2any = (await import('heic2any')).default;
+            const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+            // heic2any may return an array of blobs for multi-frame HEIC; take the first
+            const resultBlob = Array.isArray(blob) ? blob[0] : blob;
+            processedFile = new File([resultBlob], file.name.replace(/\.(heic|heif)$/i, '.jpg'), { type: 'image/jpeg' });
+        } catch (heicErr) {
+            console.warn('heic2any conversion failed, trying native decode:', heicErr);
+            // Fall through — maybe the browser can handle it natively
+        }
+    }
+
     // Load the image into a bitmap
     let bitmap;
     try {
         // Try createImageBitmap first — handles most formats including HEIC on modern browsers
-        bitmap = await createImageBitmap(file);
+        bitmap = await createImageBitmap(processedFile);
     } catch {
         // Fallback: load via <img> + object URL (works on more browsers for standard formats)
-        bitmap = await loadImageFallback(file);
+        bitmap = await loadImageFallback(processedFile);
     }
 
     // Calculate scaled dimensions
