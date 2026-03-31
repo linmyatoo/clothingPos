@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getProducts, createProduct, updateProduct, deleteProduct, addVariant, getBranches, updateBranchStock, uploadProductImage } from '../../../services/api';
 import { useLanguage } from '../../../context/LanguageContext';
+import { compressImage } from '../../../lib/imageUtils';
 
 function Products() {
     const [products, setProducts] = useState([]);
@@ -21,6 +22,7 @@ function Products() {
     const [savingStock, setSavingStock] = useState(false);
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+    const [compressing, setCompressing] = useState(false);
     const { t } = useLanguage();
 
     // Helper to securely proxy HTTP images over HTTPS via Next.js
@@ -142,11 +144,27 @@ function Products() {
         }));
     };
 
-    const handleImageChange = (e) => {
+    const handleImageChange = async (e) => {
         const file = e.target.files[0];
-        if (file) {
+        if (!file) return;
+
+        setCompressing(true);
+        setImagePreview(URL.createObjectURL(file));
+
+        try {
+            const compressed = await compressImage(file, {
+                maxWidth: 1200,
+                maxHeight: 1200,
+                quality: 0.80,
+                maxSizeKB: 800,
+            });
+            setImageFile(compressed);
+        } catch (err) {
+            console.error('Image compression failed:', err);
+            // Fall back to the original file if compression fails
             setImageFile(file);
-            setImagePreview(URL.createObjectURL(file));
+        } finally {
+            setCompressing(false);
         }
     };
 
@@ -591,9 +609,15 @@ function Products() {
                                             <label className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl text-sm font-medium cursor-pointer hover:bg-primary/20 transition-colors">
                                                 <span className="material-symbols-outlined text-[18px]">upload</span>
                                                 {imagePreview ? 'Change Image' : 'Upload Image'}
-                                                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                                                <input type="file" accept="image/*,.heic,.heif" onChange={handleImageChange} className="hidden" disabled={compressing} />
                                             </label>
-                                            <p className="text-xs text-slate-400 mt-2">JPEG, PNG, WebP. Max 5MB.</p>
+                                            {compressing && (
+                                                <div className="flex items-center gap-2 mt-2 text-xs text-blue-600 font-medium">
+                                                    <span className="material-symbols-outlined text-[14px] animate-spin">refresh</span>
+                                                    Compressing image...
+                                                </div>
+                                            )}
+                                            <p className="text-xs text-slate-400 mt-2">JPEG, PNG, WebP, HEIC. Auto-compressed before upload.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -710,8 +734,8 @@ function Products() {
                             <button type="button" onClick={() => setShowModal(false)} className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-all">
                                 Cancel
                             </button>
-                            <button type="submit" form="product-form" disabled={formLoading} className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:bg-blue-600 hover:shadow-lg transition-all disabled:opacity-70">
-                                {formLoading ? 'Saving...' : editingProduct ? 'Update Product' : 'Save Product'}
+                            <button type="submit" form="product-form" disabled={formLoading || compressing} className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:bg-blue-600 hover:shadow-lg transition-all disabled:opacity-70">
+                                {formLoading ? 'Saving...' : compressing ? 'Compressing image...' : editingProduct ? 'Update Product' : 'Save Product'}
                             </button>
                         </div>
                     </div>

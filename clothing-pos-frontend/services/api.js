@@ -55,15 +55,12 @@ export const uploadProductImage = (productId, file) => {
     const formData = new FormData();
     formData.append('image', file);
     
-    // We intentionally bypass the /api proxy for multipart/form-data because Next.js 
-    // rewrites struggles with streaming binary data over HTTPS, causing 'write EPROTO' errors.
-    const apiUrl = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-
-    return axios.post(`${apiUrl}/products/${productId}/image`, formData, {
-        headers: { 
-            'Authorization': token ? `Bearer ${token}` : ''
-        },
+    // Upload through the Next.js proxy (same origin = no CORS issues).
+    // Frontend compresses images to <1MB before calling this, so the
+    // HTTPS streaming issue that originally caused a direct-to-backend
+    // bypass is no longer a problem.
+    return API.post(`/products/${productId}/image`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
     });
 };
 
