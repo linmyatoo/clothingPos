@@ -2,6 +2,7 @@ const db = require('../config/db');
 const { minioClient, BUCKET } = require('../config/minio');
 const crypto = require('crypto');
 const sharp = require('sharp');
+const heicConvert = require('heic-convert');
 
 exports.uploadProductImage = async (req, res, next) => {
     const { id } = req.params;
@@ -18,8 +19,21 @@ exports.uploadProductImage = async (req, res, next) => {
         // Generate unique filename and force .webp extension for compression
         const filename = `products/${id}/${crypto.randomUUID()}.webp`;
 
+        // Convert HEIC/HEIF to JPEG first if needed (sharp on Alpine can't decode HEIC)
+        let imageBuffer = req.file.buffer;
+        const isHeic = req.file.mimetype === 'image/heic' || req.file.mimetype === 'image/heif' ||
+            /\.(heic|heif)$/i.test(req.file.originalname);
+
+        if (isHeic) {
+            imageBuffer = await heicConvert({
+                buffer: imageBuffer,
+                format: 'JPEG',
+                quality: 0.9,
+            });
+        }
+
         // Compress and resize image using sharp (Max width 1000px, 80% quality WebP)
-        const compressedBuffer = await sharp(req.file.buffer)
+        const compressedBuffer = await sharp(imageBuffer)
             .resize({ width: 1000, withoutEnlargement: true })
             .webp({ quality: 80 })
             .toBuffer();
