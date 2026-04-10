@@ -338,7 +338,7 @@ function Products() {
                                 <tr className="border-b border-slate-200 bg-slate-50/50">
                                     <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 w-[50%]">Product</th>
                                     <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 w-[12%]">Category</th>
-                                    <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 w-[12%]">Brand</th>
+                                    <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 w-[12%]">Stock</th>
                                     <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 text-right w-[10%]">Price</th>
                                     <th className="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 text-right w-[16%]">Actions</th>
                                 </tr>
@@ -394,7 +394,7 @@ function Products() {
                                                             </span>
                                                         </div>
                                                         <div className="w-[12%]">
-                                                            <span className="text-sm text-slate-600 truncate block pr-2">{product.brand || '—'}</span>
+                                                            {getStockBadge(totalStock)}
                                                         </div>
                                                         <div className="w-[10%] text-right">
                                                             <span className="text-sm font-semibold text-slate-900">
