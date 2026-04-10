@@ -196,7 +196,15 @@ exports.getDashboardStats = async (req, res, next) => {
     );
 
     const monthSalesRows = await db.query(
-      `SELECT COALESCE(SUM(total_amount), 0) AS total FROM sales s WHERE YEAR(s.created_at) = ? AND MONTH(s.created_at) = ? ${bf.clause}`,
+      `SELECT 
+        COALESCE(SUM(s.total_amount), 0) AS total_revenue,
+        COALESCE(SUM((
+          SELECT COALESCE(SUM(si.quantity * pv.cost_price), 0)
+          FROM sale_items si
+          JOIN product_variants pv ON pv.id = si.variant_id
+          WHERE si.sale_id = s.id
+        )), 0) AS total_cost
+       FROM sales s WHERE YEAR(s.created_at) = ? AND MONTH(s.created_at) = ? ${bf.clause}`,
       bf.param ? [currentYear, currentMonth, bf.param] : [currentYear, currentMonth]
     );
 
@@ -239,7 +247,8 @@ exports.getDashboardStats = async (req, res, next) => {
 
     res.json({
       today_revenue: Number(todaySalesRows[0]?.total || 0),
-      monthly_revenue: Number(monthSalesRows[0]?.total || 0),
+      monthly_revenue: Number(monthSalesRows[0]?.total_revenue || 0),
+      monthly_profit: Number((monthSalesRows[0]?.total_revenue || 0) - (monthSalesRows[0]?.total_cost || 0)),
       today_transactions: Number(todayCountRows[0]?.count || 0),
       low_stock_items: sanitizeRows(lowStock),
     });

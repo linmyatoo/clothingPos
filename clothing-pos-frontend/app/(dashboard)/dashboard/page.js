@@ -42,7 +42,8 @@ function Dashboard() {
                 setStats({
                     todayRevenue: statsRes.data.today_revenue || 0,
                     monthlyRevenue: statsRes.data.monthly_revenue || 0,
-                    todayTransactions: statsRes.data.today_transactions || 0
+                    todayTransactions: statsRes.data.today_transactions || 0,
+                    monthlyProfit: statsRes.data.monthly_profit || 0
                 });
                 setLowStockItems(statsRes.data.low_stock_items || []);
                 setPerformance(perfRes.data);
@@ -141,17 +142,17 @@ function Dashboard() {
                             </div>
                             <div className="bg-surface-light p-6 rounded-2xl shadow-soft border border-slate-100 flex flex-col justify-between group hover:border-primary/20 transition-all duration-300">
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className="p-3 bg-amber-50 rounded-xl text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300">
-                                        <span className="material-symbols-outlined">receipt_long</span>
+                                    <div className="p-3 bg-violet-50 rounded-xl text-violet-600 group-hover:bg-violet-600 group-hover:text-white transition-colors duration-300">
+                                        <span className="material-symbols-outlined">account_balance_wallet</span>
                                     </div>
                                     <span className="flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
-                                        {t('today')}
+                                        {t('monthly')}
                                         <span className="material-symbols-outlined text-[14px] ml-0.5">trending_up</span>
                                     </span>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-text-muted font-medium mb-1">{t('today_transactions')}</p>
-                                    <h3 className="text-2xl font-bold text-text-main">{stats?.todayTransactions || 0}</h3>
+                                    <p className="text-sm text-text-muted font-medium mb-1">Monthly Profit</p>
+                                    <h3 className="text-2xl font-bold text-text-main">{parseFloat(stats?.monthlyProfit || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} MMK</h3>
                                 </div>
                             </div>
                             <div className="bg-surface-light p-6 rounded-2xl shadow-soft border border-slate-100 flex flex-col justify-between group hover:border-rose-200 transition-all duration-300">
