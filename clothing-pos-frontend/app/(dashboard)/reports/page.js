@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getDailyReport, getMonthlyReport, getYearlyReport, getBranches, getSale } from '../../../services/api';
+import { getDailyReport, getMonthlyReport, getYearlyReport, getBranches, getSale, updateSale, deleteSale, getProducts } from '../../../services/api';
 import { useLanguage } from '../../../context/LanguageContext';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -26,6 +26,7 @@ function Reports() {
     const [expandedSaleId, setExpandedSaleId] = useState(null);
     const [saleItems, setSaleItems] = useState([]);
     const [loadingSaleItems, setLoadingSaleItems] = useState(false);
+    const [editSale, setEditSale] = useState(null);
     const { t } = useLanguage();
 
     useEffect(() => {
@@ -79,6 +80,23 @@ function Reports() {
         } finally {
             setLoadingSaleItems(false);
         }
+    };
+
+    const handleDeleteSale = async (e, id) => {
+        e.stopPropagation();
+        if (!confirm('Are you sure you want to delete this sale? This will permanently restore stock for all items.')) return;
+        try {
+            await deleteSale(id);
+            fetchReport();
+            if (expandedSaleId === id) setExpandedSaleId(null);
+        } catch (err) {
+            alert(err?.response?.data?.message || 'Failed to delete sale');
+        }
+    };
+
+    const handleEditSale = (e, sale) => {
+        e.stopPropagation();
+        setEditSale(sale);
     };
 
     const totalTransactions = parseInt(data?.summary?.total_transactions || 0);
@@ -475,11 +493,21 @@ function Reports() {
                                                         </span>
                                                     </td>
                                                     <td className="py-4 px-6 text-right font-semibold text-slate-900">{parseFloat(s.total_amount).toFixed(2)} MMK</td>
-                                                    <td className="py-4 px-6 text-right">
+                                                    <td className="py-4 px-6 text-right flex items-center justify-end gap-3">
                                                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/10">
                                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                                             Paid
                                                         </span>
+                                                        {user?.role === 'admin' && (
+                                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <button onClick={(e) => handleEditSale(e, s)} className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded" title="Edit Sale">
+                                                                    <span className="material-symbols-outlined text-[18px]">edit</span>
+                                                                </button>
+                                                                <button onClick={(e) => handleDeleteSale(e, s.id)} className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded" title="Delete Sale">
+                                                                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                     </td>
                                                 </tr>
                                                 {expandedSaleId === s.id && (
@@ -562,7 +590,209 @@ function Reports() {
                     </div>
                 </div>
             </div>
+            {editSale && (
+                <EditTransactionModal 
+                    sale={editSale} 
+                    onClose={() => setEditSale(null)} 
+                    onSave={() => { setEditSale(null); fetchReport(); }} 
+                />
+            )}
         </>
+    );
+}
+
+function EditTransactionModal({ sale, onClose, onSave }) {
+    const [items, setItems] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [paymentMethod, setPaymentMethod] = useState(sale.payment_method);
+
+    useEffect(() => {
+        const init = async () => {
+            try {
+                const [saleRes, productsRes] = await Promise.all([
+                    getSale(sale.id),
+                    getProducts(sale.branch_id)
+                ]);
+                setItems(saleRes.data.items.map(item => ({
+                    variant_id: item.variant_id,
+                    product_name: item.product_name,
+                    size: item.size,
+                    color: item.color,
+                    quantity: item.quantity,
+                    price: parseFloat(item.price)
+                })));
+                setProducts(productsRes.data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        init();
+    }, [sale]);
+
+    const handleQuantityChange = (index, delta) => {
+        const newItems = [...items];
+        const newItem = { ...newItems[index] };
+        newItem.quantity += delta;
+        if (newItem.quantity < 1) newItem.quantity = 1;
+        newItems[index] = newItem;
+        setItems(newItems);
+    };
+
+    const handleRemoveItem = (index) => {
+        setItems(items.filter((_, i) => i !== index));
+    };
+
+    const handleAddProduct = (e) => {
+        const variantId = parseInt(e.target.value);
+        if (!variantId) return;
+        
+        let selectedVariant = null;
+        let selectedProduct = null;
+        for (const p of products) {
+            for (const v of p.variants || []) {
+                if (v.id === variantId) {
+                    selectedVariant = v;
+                    selectedProduct = p;
+                }
+            }
+        }
+        
+        if (selectedVariant) {
+            const existing = items.findIndex(i => i.variant_id === variantId);
+            if (existing >= 0) {
+                handleQuantityChange(existing, 1);
+            } else {
+                setItems([...items, {
+                    variant_id: variantId,
+                    product_name: selectedProduct.name,
+                    size: selectedVariant.size,
+                    color: selectedVariant.color,
+                    quantity: 1,
+                    price: parseFloat(selectedVariant.selling_price)
+                }]);
+            }
+        }
+        e.target.value = '';
+    };
+
+    const handleSubmit = async () => {
+        if (items.length === 0) return alert('Cannot save an empty invoice.');
+        try {
+            await updateSale(sale.id, { items, payment_method: paymentMethod });
+            onSave();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Failed to update sale');
+        }
+    };
+
+    if (loading) return <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm"><div className="bg-white p-6 rounded-2xl shadow-xl font-medium text-slate-600 flex items-center gap-3"><span className="material-symbols-outlined animate-spin">refresh</span>Loading invoice...</div></div>;
+
+    const total = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-200">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh] ring-1 ring-slate-900/5">
+                <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 backdrop-blur-md">
+                    <div>
+                        <h3 className="text-xl font-bold text-slate-900 tracking-tight">Edit Invoice</h3>
+                        <p className="text-sm font-medium text-primary mt-0.5">#{sale.invoice_number}</p>
+                    </div>
+                    <button onClick={onClose} className="w-10 h-10 flex flex-col items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all shadow-sm"><span className="material-symbols-outlined text-[20px]">close</span></button>
+                </div>
+                <div className="p-6 overflow-y-auto flex-1">
+                    <div className="mb-6 bg-blue-50/50 p-5 rounded-2xl border border-blue-100">
+                        <label className="block text-sm font-bold text-slate-800 mb-2">Add Items</label>
+                        <select onChange={handleAddProduct} className="w-full px-4 py-3 border border-blue-200 rounded-xl bg-white shadow-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                            <option value="">+ Find and select a product to add...</option>
+                            {products.map(p => (
+                                p.variants?.map(v => (
+                                    <option key={v.id} value={v.id}>
+                                        {p.name} - {v.size} {v.color ? `(${v.color})` : ''} - {parseFloat(v.selling_price).toFixed(2)} MMK (Available: {v.stock_quantity})
+                                    </option>
+                                ))
+                            ))}
+                        </select>
+                    </div>
+
+                    <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-emerald-500 text-[18px]">shopping_cart</span>
+                        Current Items
+                    </h4>
+                    
+                    <div className="border border-slate-200 rounded-2xl overflow-hidden mb-8 shadow-sm">
+                        <table className="w-full text-left text-sm whitespace-nowrap">
+                            <thead className="bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                    <th className="py-3 px-5 font-semibold text-slate-500 uppercase tracking-wider text-xs">Product Details</th>
+                                    <th className="py-3 px-5 font-semibold text-slate-500 uppercase tracking-wider text-xs text-center">Qty</th>
+                                    <th className="py-3 px-5 font-semibold text-slate-500 uppercase tracking-wider text-xs text-right">Unit Price</th>
+                                    <th className="py-3 px-5 font-semibold text-slate-500 uppercase tracking-wider text-xs text-right">Line Total</th>
+                                    <th className="py-3 px-5 text-center"></th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {items.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="5" className="py-8 text-center text-slate-400 italic">No items remaining. Invoice will be invalid.</td>
+                                    </tr>
+                                ) : items.map((item, idx) => (
+                                    <tr key={idx} className="hover:bg-slate-50/30">
+                                        <td className="py-4 px-5">
+                                            <p className="font-bold text-slate-800">{item.product_name}</p>
+                                            <p className="text-xs font-medium text-slate-500 mt-0.5">{item.size} • {item.color}</p>
+                                        </td>
+                                        <td className="py-4 px-5">
+                                            <div className="flex items-center justify-center">
+                                                <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+                                                    <button type="button" onClick={() => handleQuantityChange(idx, -1)} className="w-8 h-8 flex items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"><span className="material-symbols-outlined text-[16px]">remove</span></button>
+                                                    <span className="w-10 text-center font-bold text-sm text-slate-900">{item.quantity}</span>
+                                                    <button type="button" onClick={() => handleQuantityChange(idx, 1)} className="w-8 h-8 flex items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"><span className="material-symbols-outlined text-[16px]">add</span></button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="py-4 px-5 text-right font-medium text-slate-600">{item.price.toLocaleString('en-US', { minimumFractionDigits: 2 })} MMK</td>
+                                        <td className="py-4 px-5 text-right font-bold text-slate-900">{(item.price * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2 })} MMK</td>
+                                        <td className="py-4 px-5 text-center">
+                                            <button onClick={() => handleRemoveItem(idx)} className="text-rose-400 hover:text-rose-600 hover:bg-rose-50 w-8 h-8 flex items-center justify-center rounded-lg transition-all" title="Remove Item">
+                                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                        <div className="w-full sm:w-64">
+                            <label className="block text-sm font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-slate-400 text-[18px]">payments</span>
+                                Payment Method
+                            </label>
+                            <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm bg-white">
+                                <option value="cash">Cash</option>
+                                <option value="card">Card</option>
+                                <option value="transfer">Bank Transfer</option>
+                            </select>
+                        </div>
+                        <div className="text-right flex-1 pt-4 sm:pt-0 border-t border-slate-200 sm:border-0 mt-2 sm:mt-0">
+                            <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">New Invoice Total</p>
+                            <p className="text-3xl font-extrabold text-emerald-600 tracking-tight">{total.toLocaleString('en-US', { minimumFractionDigits: 2 })} <span className="text-lg text-emerald-600/70 ml-1">MMK</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div className="px-6 py-5 bg-white border-t border-slate-100 flex justify-end gap-3 rounded-b-3xl">
+                    <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-colors">Cancel</button>
+                    <button onClick={handleSubmit} className="px-6 py-2.5 rounded-xl font-bold bg-primary text-white hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/20 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }
 

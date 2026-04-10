@@ -68,6 +68,8 @@ export const uploadProductImage = (productId, file) => {
 export const createSale = (data) => API.post('/sales', data);
 export const getSales = (branchId) => API.get('/sales', { params: branchId ? { branch_id: branchId } : {} });
 export const getSale = (id) => API.get(`/sales/${id}`);
+export const updateSale = (id, data) => API.put(`/sales/${id}`, data);
+export const deleteSale = (id) => API.delete(`/sales/${id}`);
 
 // Reports
 export const getDashboardStats = (branchId) => API.get('/reports/dashboard', { params: branchId ? { branch_id: branchId } : {} });

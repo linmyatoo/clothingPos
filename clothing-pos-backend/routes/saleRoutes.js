@@ -7,5 +7,7 @@ const roleMiddleware = require('../middleware/roleMiddleware');
 router.post('/', authMiddleware, saleController.createSale);
 router.get('/', authMiddleware, saleController.getSales);
 router.get('/:id', authMiddleware, saleController.getSaleById);
+router.put('/:id', authMiddleware, roleMiddleware('admin'), saleController.updateSale);
+router.delete('/:id', authMiddleware, roleMiddleware('admin'), saleController.deleteSale);
 
 module.exports = router;

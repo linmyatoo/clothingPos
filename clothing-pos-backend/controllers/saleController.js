@@ -154,3 +154,112 @@ exports.getSaleById = async (req, res, next) => {
         next(err);
     }
 };
+
+exports.updateSale = async (req, res, next) => {
+    const { id } = req.params;
+    const { items, payment_method } = req.body;
+
+    const conn = await db.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        const sales = await conn.query('SELECT * FROM sales WHERE id = ? FOR UPDATE', [id]);
+        if (!sales.length) throw { status: 404, message: 'Sale not found' };
+        const sale = sales[0];
+        const saleBranchId = sale.branch_id;
+
+        // Step 1: Revert old items
+        const oldItems = await conn.query('SELECT * FROM sale_items WHERE sale_id = ? FOR UPDATE', [id]);
+        for (const oldItem of oldItems) {
+            await conn.query(
+                'UPDATE branch_stock SET stock_quantity = stock_quantity + ? WHERE branch_id = ? AND variant_id = ?',
+                [oldItem.quantity, saleBranchId, oldItem.variant_id]
+            );
+        }
+        await conn.query('DELETE FROM sale_items WHERE sale_id = ?', [id]);
+
+        // Step 2: Add new items
+        let totalAmount = 0;
+        if (!items || items.length === 0) {
+            throw { status: 400, message: 'No items in the cart' };
+        }
+
+        for (const item of items) {
+            const variants = await conn.query(
+                `SELECT pv.*, bs.stock_quantity
+                 FROM product_variants pv
+                 JOIN branch_stock bs ON bs.variant_id = pv.id AND bs.branch_id = ?
+                 WHERE pv.id = ? FOR UPDATE`,
+                [saleBranchId, item.variant_id]
+            );
+
+            if (!variants.length) {
+                throw { status: 404, message: `Variant ${item.variant_id} not found at this branch` };
+            }
+
+            const variant = variants[0];
+            if (variant.stock_quantity < item.quantity) {
+                throw {
+                    status: 400,
+                    message: `Insufficient stock for variant ID ${item.variant_id}. Available: ${variant.stock_quantity}`,
+                };
+            }
+
+            item.price = variant.selling_price;
+            item.subtotal = variant.selling_price * item.quantity;
+            totalAmount += Number(item.subtotal);
+
+            await conn.query(
+                'INSERT INTO sale_items (sale_id, variant_id, quantity, price, subtotal) VALUES (?, ?, ?, ?, ?)',
+                [id, item.variant_id, item.quantity, item.price, item.subtotal]
+            );
+
+            await conn.query(
+                'UPDATE branch_stock SET stock_quantity = stock_quantity - ? WHERE branch_id = ? AND variant_id = ?',
+                [item.quantity, saleBranchId, item.variant_id]
+            );
+        }
+
+        await conn.query('UPDATE sales SET total_amount = ?, payment_method = ? WHERE id = ?', [totalAmount, payment_method || sale.payment_method, id]);
+
+        await conn.commit();
+        res.json({ message: 'Sale updated successfully', total_amount: totalAmount });
+    } catch (err) {
+        await conn.rollback();
+        next(err);
+    } finally {
+        conn.release();
+    }
+};
+
+exports.deleteSale = async (req, res, next) => {
+    const { id } = req.params;
+    const conn = await db.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        const sales = await conn.query('SELECT * FROM sales WHERE id = ? FOR UPDATE', [id]);
+        if (!sales.length) throw { status: 404, message: 'Sale not found' };
+        const sale = sales[0];
+        const saleBranchId = sale.branch_id;
+
+        const oldItems = await conn.query('SELECT * FROM sale_items WHERE sale_id = ? FOR UPDATE', [id]);
+        for (const oldItem of oldItems) {
+            await conn.query(
+                'UPDATE branch_stock SET stock_quantity = stock_quantity + ? WHERE branch_id = ? AND variant_id = ?',
+                [oldItem.quantity, saleBranchId, oldItem.variant_id]
+            );
+        }
+
+        await conn.query('DELETE FROM sale_items WHERE sale_id = ?', [id]);
+        await conn.query('DELETE FROM sales WHERE id = ?', [id]);
+
+        await conn.commit();
+        res.json({ message: 'Sale deleted successfully' });
+    } catch (err) {
+        await conn.rollback();
+        next(err);
+    } finally {
+        conn.release();
+    }
+};
