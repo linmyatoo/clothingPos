@@ -297,18 +297,19 @@ exports.getPerformance = async (req, res, next) => {
     const normal = [];
     const lessSelling = [];
 
-    const thresholdHigh = 20;
-    const thresholdLow = 5;
+    const totalItems = allPerformance.length;
+    const topCount = Math.max(1, Math.floor(totalItems * 0.3));
+    const bottomCount = Math.max(1, Math.floor(totalItems * 0.3));
 
     allPerformance.forEach((item, index) => {
-      if (allPerformance.length > 0) {
-        if (index < Math.max(3, Math.floor(allPerformance.length * 0.2)) && item.total_sold > 0) {
-          bestSelling.push(item);
-        } else if (item.total_sold === 0 || item.total_sold <= thresholdLow || index >= Math.floor(allPerformance.length * 0.7)) {
-          lessSelling.push(item);
-        } else {
-          normal.push(item);
-        }
+      if (item.total_sold === 0) {
+        lessSelling.push(item);
+      } else if (index < topCount) {
+        bestSelling.push(item);
+      } else if (index >= totalItems - bottomCount || item.total_sold <= 2) {
+        lessSelling.push(item);
+      } else {
+        normal.push(item);
       }
     });
 
