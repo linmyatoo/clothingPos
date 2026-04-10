@@ -652,8 +652,9 @@ function EditTransactionModal({ sale, onClose, onSave }) {
         let selectedVariant = null;
         let selectedProduct = null;
         for (const p of products) {
-            for (const v of p.variants || []) {
-                if (v.id === variantId) {
+            const variantsList = p.Variants || p.variants || [];
+            for (const v of variantsList) {
+                if (Number(v.id) === variantId) {
                     selectedVariant = v;
                     selectedProduct = p;
                 }
@@ -707,13 +708,14 @@ function EditTransactionModal({ sale, onClose, onSave }) {
                         <label className="block text-sm font-bold text-slate-800 mb-2">Add Items</label>
                         <select onChange={handleAddProduct} className="w-full px-4 py-3 border border-blue-200 rounded-xl bg-white shadow-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                             <option value="">+ Find and select a product to add...</option>
-                            {products.map(p => (
-                                p.variants?.map(v => (
+                            {products.map(p => {
+                                const variantsList = p.Variants || p.variants || [];
+                                return variantsList.map(v => (
                                     <option key={v.id} value={v.id}>
                                         {p.name} - {v.size} {v.color ? `(${v.color})` : ''} - {parseFloat(v.selling_price).toFixed(2)} MMK (Available: {v.stock_quantity})
                                     </option>
-                                ))
-                            ))}
+                                ));
+                            })}
                         </select>
                     </div>
 
