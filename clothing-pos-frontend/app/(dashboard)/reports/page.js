@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { getDailyReport, getMonthlyReport, getYearlyReport, getBranches } from '../../../services/api';
+import React, { useState, useEffect } from 'react';
+import { getDailyReport, getMonthlyReport, getYearlyReport, getBranches, getSale } from '../../../services/api';
 import { useLanguage } from '../../../context/LanguageContext';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -23,6 +23,9 @@ function Reports() {
     const [error, setError] = useState('');
     const [branches, setBranches] = useState([]);
     const [selectedBranch, setSelectedBranch] = useState('');
+    const [expandedSaleId, setExpandedSaleId] = useState(null);
+    const [saleItems, setSaleItems] = useState([]);
+    const [loadingSaleItems, setLoadingSaleItems] = useState(false);
     const { t } = useLanguage();
 
     useEffect(() => {
@@ -56,6 +59,25 @@ function Reports() {
             setData(null);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleTransactionClick = async (saleId) => {
+        if (expandedSaleId === saleId) {
+            setExpandedSaleId(null);
+            setSaleItems([]);
+            return;
+        }
+        setExpandedSaleId(saleId);
+        setLoadingSaleItems(true);
+        try {
+            const res = await getSale(saleId);
+            setSaleItems(res.data.items || []);
+        } catch (err) {
+            console.error('Failed to fetch sale items:', err);
+            setSaleItems([]);
+        } finally {
+            setLoadingSaleItems(false);
         }
     };
 
@@ -426,8 +448,9 @@ function Reports() {
                                     ) : (
                                         <>
                                             {tab === 'daily' && data?.sales?.map((s) => (
-                                                <tr key={s.id} className="group hover:bg-slate-50/50 transition-colors">
-                                                    <td className="py-4 px-6">
+                                                <React.Fragment key={s.id}>
+                                                <tr className={`group hover:bg-slate-50/50 transition-colors cursor-pointer ${expandedSaleId === s.id ? 'bg-slate-50/50' : ''}`} onClick={() => handleTransactionClick(s.id)}>
+                                                    <td className="py-4 px-6 relative">
                                                         <span className="font-semibold text-slate-900">#{s.invoice_number}</span>
                                                     </td>
                                                     <td className="py-4 px-6 text-slate-500">
@@ -459,6 +482,48 @@ function Reports() {
                                                         </span>
                                                     </td>
                                                 </tr>
+                                                {expandedSaleId === s.id && (
+                                                    <tr>
+                                                        <td colSpan="6" className="p-0 border-b border-slate-100">
+                                                            <div className="bg-slate-50 p-6 shadow-inner border-y border-slate-200/60">
+                                                                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Items Sold</h4>
+                                                                {loadingSaleItems ? (
+                                                                    <div className="flex items-center text-sm text-slate-400"><span className="material-symbols-outlined text-lg animate-spin mr-2">refresh</span>Loading items...</div>
+                                                                ) : saleItems.length === 0 ? (
+                                                                    <p className="text-sm text-slate-500 italic">No items found for this transaction.</p>
+                                                                ) : (
+                                                                    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                                                                        <table className="w-full text-left text-sm">
+                                                                            <thead className="bg-slate-50 border-b border-slate-200">
+                                                                                <tr>
+                                                                                    <th className="py-2.5 px-4 font-medium text-slate-500">Product</th>
+                                                                                    <th className="py-2.5 px-4 font-medium text-slate-500">Variant</th>
+                                                                                    <th className="py-2.5 px-4 font-medium text-slate-500 text-right">Qty</th>
+                                                                                    <th className="py-2.5 px-4 font-medium text-slate-500 text-right">Price</th>
+                                                                                    <th className="py-2.5 px-4 font-medium text-slate-500 text-right">Subtotal</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody className="divide-y divide-slate-100">
+                                                                                {saleItems.map((item, idx) => (
+                                                                                    <tr key={idx} className="hover:bg-slate-50/50">
+                                                                                        <td className="py-3 px-4 font-medium text-slate-900">{item.product_name}</td>
+                                                                                        <td className="py-3 px-4 text-slate-600">
+                                                                                            {item.size || 'N/A'}{item.color ? ` • ${item.color}` : ''}
+                                                                                        </td>
+                                                                                        <td className="py-3 px-4 text-right font-medium text-slate-700">{item.quantity}</td>
+                                                                                        <td className="py-3 px-4 text-right text-slate-600">{parseFloat(item.price).toFixed(2)} MMK</td>
+                                                                                        <td className="py-3 px-4 text-right font-semibold text-slate-900">{(item.quantity * item.price).toFixed(2)} MMK</td>
+                                                                                    </tr>
+                                                                                ))}
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                                </React.Fragment>
                                             ))}
                                             {tab === 'monthly' && data?.daily?.map((d) => (
                                                 <tr key={d.date} className="group hover:bg-slate-50/50 transition-colors">
