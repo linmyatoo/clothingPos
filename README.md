@@ -1,95 +1,80 @@
 # Clothing POS System
 
-A complete Point of Sale (POS) system designed for clothing stores, featuring real-time inventory management across multiple branches, sales reporting, and image storage.
+A Point of Sale system for clothing stores with multi-branch inventory management, sales reporting, and image storage.
 
-## 🚀 Tech Stack
+## Tech Stack
 
-### Backend
-- **Framework:** Node.js (Express)
-- **Database:** MariaDB (Relational Data)
-- **Object Storage:** MinIO (Product Images)
-- **Security:** JWT Authentication, Helmet (Header Protection), Express Rate Limit
-- **Deployment:** Docker & Docker Compose
+| Layer | Technology |
+|---|---|
+| Backend | Node.js, Express, JWT, Helmet, Rate Limiting |
+| Database | MariaDB 10.11 |
+| Object Storage | MinIO |
+| Frontend | Next.js, React, Tailwind CSS, Recharts |
+| Deployment | Docker Compose, Nginx, Let's Encrypt |
 
-### Frontend
-- **Framework:** Next.js (React)
-- **Styling:** Tailwind CSS
-- **State Management:** React Context API
-- **Charts:** Recharts (Analytics Dashboard)
+## Project Structure
 
----
-
-## 🛠️ Project Structure
-
-```text
-/
-├── clothing-pos-backend/     # Express API, MariaDB configuration, Dockerfile
-├── clothing-pos-frontend/    # Next.js Application, Tailwind UI
-├── scripts/                  # Deployment scripts (DigitalOcean)
-└── docker-compose.yml        # Orchestration for Backend, DB, and MinIO
+```
+clothingPos/
+├── clothing-pos-backend/     # Express API, Dockerfile, schema
+├── clothing-pos-frontend/    # Next.js application
+├── scripts/                  # Setup & deployment scripts
+└── docker-compose.yml        # DB + MinIO + Backend orchestration
 ```
 
----
-
-## ⚙️ Getting Started (Recommended: Docker)
-
-The easiest way to run the entire backend stack is using Docker Compose.
+## Quick Start (Local Development)
 
 ### Prerequisites
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
-- [Node.js](https://nodejs.org/) (for frontend development)
 
-### 1. Setup Backend
-1.  Navigate to the backend directory: `cd clothing-pos-backend`
-2.  Create `.env` from the example: `cp .env.example .env`
-3.  Return to root and start services:
-    ```bash
-    docker-compose up --build -d
-    ```
-    - **Backend:** `http://localhost:5001`
-    - **MariaDB:** `localhost:3306`
-    - **MinIO Console:** `http://localhost:9001` (user: `minioadmin` / pass: `minioadmin123`)
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
+- [Node.js](https://nodejs.org/) 20+
 
-### 2. Setup Frontend
-1.  Navigate to the frontend directory: `cd clothing-pos-frontend`
-2.  Install dependencies: `npm install`
-3.  Run the development server:
-    ```bash
-    npm run dev
-    ```
-    - **Frontend:** `http://localhost:3000`
+### 1. Start Backend Services
 
----
+From the project root:
 
-## 🔒 Security Features
+```bash
+docker compose up -d --build
+```
 
-- **JWT-based Authentication**: Secure user login and role-based access control.
-- **Role-Based Access (RBAC)**: Admins have full access, while Employees are restricted to the POS interface.
-- **SQL Injection Prevention**: All database queries use parameterized placeholders.
-- **Brute-Force Protection**: Rate limiting is applied to all API endpoints.
-- **Hardened Headers**: Helmet middleware is used to secure HTTP headers.
-- **Password Hashing**: Bcryptjs with salt rounds for secure password storage.
+This starts MariaDB, MinIO, and the backend API:
 
----
+| Service | URL | Credentials |
+|---|---|---|
+| Backend API | http://localhost:5001 | — |
+| MinIO Console | http://localhost:9001 | minioadmin / minioadmin123 |
+| MariaDB | localhost:3306 | root / rootpassword |
 
-## ☁️ Deployment (DigitalOcean)
+### 2. Initialize the Database
 
-To deploy the backend to a DigitalOcean Droplet:
+```bash
+bash scripts/setup_database.sh --all
+```
 
-1.  Upload the project to your Droplet.
-2.  Make the setup script executable:
-    ```bash
-    chmod +x scripts/setup-do.sh
-    ```
-3.  Run the script:
-    ```bash
-    ./scripts/setup-do.sh
-    ```
-    *This script installs Docker, generates a production JWT secret, and starts all backend services.*
+Default admin login: `admin@clothingpos.com` / `admin123`
 
----
+### 3. Start Frontend
 
-## 📝 License
+```bash
+cd clothing-pos-frontend
+npm install
+npm run dev
+```
 
-This project is for demonstration purposes. Feel free to use and modify for your own needs.
+Frontend runs at http://localhost:3000
+
+## Security
+
+- JWT authentication with role-based access (Admin / Employee)
+- Parameterized SQL queries (injection prevention)
+- Bcrypt password hashing
+- Helmet HTTP header hardening
+- Rate limiting on all endpoints
+
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the full remote server setup guide.
+
+## License
+
+This project is for demonstration purposes. Use and modify freely.

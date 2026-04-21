@@ -1,87 +1,283 @@
-# Full Deployment Guide (DigitalOcean VPS)
+# Deployment Guide — Remote Server (Ubuntu)
 
-This guide provides end-to-end instructions on how to set up the server infrastructure, perform the initial deployment of the Clothing POS platform, and handle subsequent backend API updates.
+Complete guide to deploy Clothing POS on a remote VPS (DigitalOcean, AWS EC2, Hetzner, etc.) with HTTPS on all services.
 
----
+## Architecture
 
-## Part 1: Prerequisites & Infrastructure Prep
+```
+Internet
+  │
+  ├─ https://yourdomain.com        → Nginx → Backend (port 5001)
+  ├─ https://yourdomain.com:9000   → Nginx → MinIO API (port 19000)
+  └─ https://yourdomain.com:9001   → Nginx → MinIO Console (port 19001)
 
-### 1. Provision Server
-Deploy a DigitalOcean Droplet (VPS). An Ubuntu 22.04 (LTS) or 24.04 (LTS) image is highly recommended. 
+Docker Network
+  ├─ pos-backend   (Node.js Express)
+  ├─ pos-db        (MariaDB 10.11)
+  └─ pos-minio     (MinIO object storage)
+```
 
-### 2. Configure Firewall
-In your DigitalOcean Cloud Panel firewall settings, ensure the following **Inbound Rules (Ports)** are open:
-*   **22** (SSH) - Setup and Remote Access
-*   **80** (HTTP) - Nginx / Let's Encrypt Certificate generation
-*   **443** (HTTPS) - Secure Backend API Traffic
-*   **9000** (Custom) - Secure MinIO API Traffic
-*   **9001** (Custom) - Secure MinIO Console
-
-### 3. Point Domain Name (DuckDNS)
-Ensure that your domain (`cpos.duckdns.org`) is actively pointing to the public IP address of your DigitalOcean droplet. **Wait 2-5 minutes** after updating to ensure DNS propagation before running the SSL scripts.
-
----
-
-## Part 2: Initial Server Setup & Deployment
-
-1. **SSH into the server:**
-   ```bash
-   ssh root@<YOUR_DROPLET_IP>
-   ```
-
-2. **Clone the Repository:**
-   ```bash
-   git clone <your-repository-url> clothingPos
-   cd clothingPos
-   ```
-
-3. **Make Setup Scripts Executable:**
-   *Make sure all scripts have execution permissions.*
-   ```bash
-   chmod +x scripts/*.sh
-   ```
-
-4. **Run the Primary Setup Script `setup-do.sh`:**
-   This script automates system updates, installs Docker, creates a production `.env` file, spins up all Docker containers (Database, MinIO, Backend API), and automatically binds your backend to `cpos.duckdns.org` using Let's Encrypt SSL.
-   ```bash
-   sudo ./scripts/setup-do.sh
-   ```
-
-5. **Run the MinIO SSL Script `setup-ssl-minio.sh`:**
-   Since Docker handles MinIO separately, this script configures Nginx to reverse proxy MinIO traffic on ports `9000` and `9001` using the SSL certificates generated in the previous step.
-   ```bash
-   sudo ./scripts/setup-ssl-minio.sh
-   ```
-
-### Verification
-Once BOTH scripts successfully finish, your services are running fully securely:
-*   **Backend API Check**: Navigate to `https://cpos.duckdns.org/`
-*   **MinIO Console Check**: Navigate to `https://cpos.duckdns.org:9001` (Default credentials matching `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD`)
+All services run in Docker containers. Nginx on the host handles SSL termination and reverse proxying.
 
 ---
 
-## Part 3: Redeployment Routine (Backend API Updates)
+## Part 1 — Server Provisioning
 
-When you make changes to the backend (i.e. modifying `clothing-pos-backend/`) and push them to your repository, follow these steps to redeploy the latest code directly on the server **without** affecting your database or MinIO data.
+### 1. Create a VPS
 
-1. **SSH into your server and enter the project folder:**
-   ```bash
-   cd ~/clothingPos
-   ```
+- **OS:** Ubuntu 22.04 LTS or 24.04 LTS
+- **Minimum specs:** 1 vCPU, 1 GB RAM, 25 GB SSD
 
-2. **Pull the latest code from Git:**
-   ```bash
-   git pull origin main
-   ```
-   *(Change `main` if you are using a different branch.)*
+### 2. Open Firewall Ports
 
-3. **Rebuild and restart the Backend Container only:**
-   Docker Compose will automatically recognize the changes to the Dockerfile context, rebuild the backend image, and spin it back up, replacing the old instance. 
-   ```bash
-   docker compose up -d --build backend
-   ```
+Open these inbound ports in your cloud provider's firewall:
 
-That's it! Your database (`pos-db`) and storage (`pos-minio`) will continue running uninterrupted, resulting in a zero configuration reload of your application layer. 
+| Port | Protocol | Purpose |
+|------|----------|---------|
+| 22 | TCP | SSH |
+| 80 | TCP | HTTP (Let's Encrypt verification) |
+| 443 | TCP | HTTPS — Backend API |
+| 9000 | TCP | HTTPS — MinIO API |
+| 9001 | TCP | HTTPS — MinIO Console |
 
-> **Tip:** You can check the logs of your rebuilt backend at any time with:
-> `docker compose logs -f backend`
+### 3. Point Your Domain
+
+Create a DNS A record pointing your domain (e.g. `cpos.duckdns.org`) to the server's public IP. Wait for DNS propagation (2–5 minutes) before continuing.
+
+---
+
+## Part 2 — Initial Server Setup
+
+### 1. SSH Into the Server
+
+```bash
+ssh root@<SERVER_IP>
+```
+
+### 2. Clone the Repository
+
+```bash
+git clone <your-repo-url> clothingPos
+cd clothingPos
+```
+
+### 3. Make Scripts Executable
+
+```bash
+chmod +x scripts/*.sh
+```
+
+### 4. Run the Main Setup Script
+
+This script:
+- Updates system packages
+- Installs Docker and Docker Compose
+- Generates a production JWT secret
+- Builds and starts all containers
+- Installs Nginx and Certbot
+- Configures HTTPS for the backend API
+
+```bash
+sudo ./scripts/setup-do.sh
+```
+
+If Certbot fails, make sure your domain resolves to the server IP and re-run:
+
+```bash
+sudo certbot --nginx -d yourdomain.com
+```
+
+### 5. Configure MinIO SSL
+
+This script sets up Nginx reverse proxy for MinIO with the same SSL certificate:
+
+```bash
+sudo ./scripts/setup-ssl-minio.sh
+```
+
+### 6. Initialize the Database
+
+```bash
+bash scripts/setup_database.sh --all
+```
+
+This runs `schema.sql` and all migrations. Default admin credentials:
+
+- **Email:** admin@clothingpos.com
+- **Password:** admin123
+
+> **Important:** Change the admin password after first login.
+
+---
+
+## Part 3 — Verify Everything Works
+
+| Service | URL | Expected Response |
+|---------|-----|-------------------|
+| Backend API | `https://yourdomain.com` | API JSON response |
+| MinIO Console | `https://yourdomain.com:9001` | MinIO login page |
+| MinIO API | `https://yourdomain.com:9000` | MinIO XML response |
+
+Check container status:
+
+```bash
+docker compose ps
+```
+
+Check backend logs:
+
+```bash
+docker compose logs -f backend
+```
+
+---
+
+## Part 4 — Production Credentials
+
+Before going live, change all default passwords. Edit `docker-compose.yml` and update:
+
+### Change MariaDB Password
+
+```bash
+# 1. Change the password inside MariaDB
+docker exec -it pos-db mysql -u root -prootpassword \
+  -e "ALTER USER 'root'@'%' IDENTIFIED BY 'NEW_PASSWORD'; FLUSH PRIVILEGES;"
+
+# 2. Update docker-compose.yml in BOTH places:
+#    MYSQL_ROOT_PASSWORD (db service)
+#    DB_PASSWORD (backend service)
+
+# 3. Restart backend to pick up new credentials
+docker compose up -d --build backend
+```
+
+### Change MinIO Password
+
+```bash
+# 1. Update docker-compose.yml:
+#    MINIO_ROOT_PASSWORD (minio service)
+#    MINIO_SECRET_KEY (backend service)
+
+# 2. Restart MinIO and backend
+docker compose up -d --build minio backend
+```
+
+### Change JWT Secret
+
+The setup script auto-generates a JWT secret, but to rotate it:
+
+```bash
+# Generate a new secret
+openssl rand -base64 32
+
+# Update JWT_SECRET in docker-compose.yml (backend service)
+# Then restart
+docker compose up -d --build backend
+```
+
+---
+
+## Part 5 — Redeploying (Backend Updates)
+
+When you push changes to the backend code, redeploy on the server:
+
+```bash
+cd ~/clothingPos
+git pull origin main
+docker compose up -d --build backend
+```
+
+This only rebuilds the backend container. Database and MinIO stay running with zero downtime.
+
+---
+
+## Part 6 — Useful Commands
+
+### View Logs
+
+```bash
+docker compose logs -f backend     # Backend logs
+docker compose logs -f db          # MariaDB logs
+docker compose logs -f minio       # MinIO logs
+docker compose logs -f             # All services
+```
+
+### Restart a Service
+
+```bash
+docker compose restart backend
+docker compose restart db
+docker compose restart minio
+```
+
+### Stop All Services
+
+```bash
+docker compose down
+```
+
+### Start All Services
+
+```bash
+docker compose up -d
+```
+
+### Reset Database (Destroys All Data)
+
+```bash
+docker compose down
+docker volume rm clothingpos_db-data
+docker compose up -d
+bash scripts/setup_database.sh --all
+```
+
+### Renew SSL Certificates
+
+Certbot auto-renews via systemd timer, but you can manually renew:
+
+```bash
+sudo certbot renew
+sudo systemctl reload nginx
+```
+
+### Check Nginx Config
+
+```bash
+sudo nginx -t
+sudo systemctl status nginx
+```
+
+---
+
+## Part 7 — Troubleshooting
+
+### Backend won't start
+
+```bash
+docker compose logs backend
+```
+
+Common causes:
+- Database not ready yet → `docker compose restart backend`
+- Wrong DB password → check `DB_PASSWORD` matches `MYSQL_ROOT_PASSWORD`
+
+### Can't reach the server on HTTPS
+
+1. Check firewall allows ports 80, 443, 9000, 9001
+2. Check domain DNS points to the server: `dig yourdomain.com`
+3. Check Nginx is running: `sudo systemctl status nginx`
+4. Check Certbot certificate exists: `sudo certbot certificates`
+
+### MinIO upload fails
+
+1. Check MinIO container is running: `docker compose ps minio`
+2. Check MinIO SSL proxy config: `cat /etc/nginx/sites-available/minio`
+3. Check `MINIO_PUBLIC_PROTOCOL` is `https` in `docker-compose.yml`
+
+### Database connection refused
+
+```bash
+docker compose logs db
+```
+
+MariaDB can take a few seconds on first boot. If it keeps failing, check the password in `docker-compose.yml` matches across both the `db` and `backend` services.
